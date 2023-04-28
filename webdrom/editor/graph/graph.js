@@ -276,7 +276,7 @@ class MNode_Ressource extends Component {
         this.bubble.style.backgroundColor = this.color;
 
         this.element = createElement("div", {}, "relative", [
-            createElement("div", {}, "select-none text-sm font-300", [
+            createElement("div", {}, "select-none text-sm font-300" + (this.is_output ? " text-right" : ""), [
                 this.bubble,
                 createElement("div", {}, `absolute h-[100%] w-6 ${this.is_output ? "right-[-24px]" : "left-[-24px]"}`, []),
                 this.name
