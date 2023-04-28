@@ -10,6 +10,7 @@ class GraphEditor extends Component {
     }
 
     set_properties_node (node) {
+        this.active_node = node;
         this.properties_manager.set_target(node);
     }
     _first_render () {

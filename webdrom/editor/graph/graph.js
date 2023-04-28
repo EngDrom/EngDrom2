@@ -103,6 +103,13 @@ class MGraph extends Component {
         this.bg_element.style.backgroundImage = `linear-gradient(var(--webdrom-editor-graph-border) .${this.scale}em, transparent .${this.scale}em), linear-gradient(90deg, var(--webdrom-editor-graph-border) .${this.scale}em, transparent .${this.scale}em)`
         this.bg_element.style.backgroundSize  = `calc(${this.scale} * var(--webdrom-editor-graph-grid-size)) calc(${this.scale} * var(--webdrom-editor-graph-grid-size))`
     }
+    remove_node (node) {
+        if (this.editor.active_node === node)
+            this.editor.set_properties_node(undefined);
+        
+        this.nodes.splice(this.nodes.indexOf(node), 1);
+        this._recompute_element();
+    }
     _recompute_element () {
         let to_remove = [];
         for (let child of this.element.childNodes) {
@@ -151,7 +158,10 @@ class MGraph extends Component {
             let summon_y = (event.clientY - this.rel_element.getBoundingClientRect().top  ) * this.scale;
             
             let el = new SearchableContextMenu(undefined, MATERIAL_CATEGORY.library.as_ctxmenu_config((node) => {
-                this.nodes.push(node.as_node(this, this, summon_x, summon_y))
+                let r_node = node.as_node(this, this, summon_x - this.ix, summon_y - this.iy);
+                r_node.setBackground(this.ix, this.iy)
+                
+                this.nodes.push(r_node);
                 this._recompute_element();
                 
                 close();
@@ -159,6 +169,15 @@ class MGraph extends Component {
 
             return el;
         };
+        document.addEventListener("keydown", (event) => {
+            if (event.key != "Delete") return ;
+
+            let to_delete = this.editor.active_node;
+            if (to_delete === undefined) return ;
+
+            if (to_delete.element.classList.contains("active"))
+                to_delete.destroy();
+        })
     }
     _render () {
         return this.rel_element;
@@ -322,6 +341,14 @@ class MNode extends Component {
         this.iy = iy;
 
         this._use_delta();
+    }
+    destroy () {
+        for (let input of this.inputs)
+            input.clear();
+        for (let output of this.outputs)
+            output.clear();
+        
+        this.graph.remove_node(this);
     }
     _first_render () {
         this.element = createElement("div", {}, "forward-grid-node", [
