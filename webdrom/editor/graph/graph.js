@@ -67,6 +67,8 @@ class MGraph extends Component {
     constructor (parent) {
         super(parent);
 
+        this.editor = parent;
+
         this.scale = 2;
         this.scala = new Scalar(2);
 
@@ -296,13 +298,15 @@ class MNode_Ressource extends Component {
     _render () { return this.element; }
 }
 class MNode extends Component {
-    constructor (parent, name, x, y, inputs, outputs) {
+    constructor (parent, graph, name, x, y, inputs, outputs, parameters) {
         super(parent);
 
-        this.name = name;
+        this.name  = name;
+        this.graph = graph;
 
         this.inputs  = inputs;
         this.outputs = outputs;
+        this.params  = parameters;
         for (let input  of this.inputs ) input .setNode(this);
         for (let output of this.outputs) output.setNode(this);
 
@@ -344,6 +348,10 @@ class MNode extends Component {
             for (let output of this.outputs)
                 for (let child of output.childs)
                     child.computeLine();
+        })
+
+        this.element.addEventListener("click", (event) => {
+            this.graph.editor.set_properties_node(this);
         })
 
         this._use_delta();

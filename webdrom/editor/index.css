@@ -381,6 +381,14 @@ input[type=number] {
     min-width: 300px;
     position: absolute;
     background-color: var(--webdrom-light-background);
+    border: none;
+    margin: 2px;
+}
+.active.grid-node {
+    margin: 0px;
+    border: solid;
+    border-width: 2px;
+    border-color: var(--webdrom-editor-blue-light);
 }
 .grid-node > .grid-title {
     background-color: var(--webdrom-background);

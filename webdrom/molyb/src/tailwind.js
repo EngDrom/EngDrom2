@@ -214,6 +214,7 @@ class _Tailwind {
             if (attr.startsWith("cls."))
                 type = `.${attr.substr(4)}${type}`
         }
+        if (attributes.includes("active")) type = `.active${type}`
         if (attributes.includes("dark"))  type = `body.dark ${type}`
         if (attributes.includes("hover")) type += ":hover"
 

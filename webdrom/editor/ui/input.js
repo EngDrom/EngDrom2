@@ -79,3 +79,74 @@ class Vec3Input extends Component {
         return this.element;
     }
 }
+class VecNInput extends Component {
+    constructor (parent, callback, values) {
+        super(parent);
+
+        this.dimension = values.length;
+
+        this.default_values = values;
+        this._first_render();
+
+        this.callback = callback
+    }
+
+    getValue (input, def) {
+        if (isNumeric(input.value)) return parseFloat(input.value);
+        return def;
+    }
+    send () {
+        let res = [];
+        for (let idx = 0; idx < this.dimension; idx ++)
+            res.push( this.getValue(this.inputs[idx], this.default_values[idx]) )
+    
+        this.callback(...res);
+    }
+
+    onkey () {
+        this.send();
+    }
+    onchange () {
+        for (let idx = 0; idx < this.dimension; idx ++)
+            this.reset(this.inputs[idx], this.default_values[idx])
+
+        this.send();
+    }
+    setValue (...res) {
+        for (let idx = 0; idx < this.dimension; idx ++) {
+            this.inputs[idx].value = res[idx];
+            this.check(this.inputs[idx], res[idx]);
+        }
+    }
+    check (input, value) {
+        if (value === undefined) input.setAttribute("disabled", "true");
+        else if (input.hasAttribute("disabled"))
+            input.removeAttribute("disabled");
+    }
+    make_input () {
+        let input = createElement("input", {}, "bg-Vwebdrom-background text-Vwebdrom-editor-text p-2 rounded-8", []);
+        input.setAttribute("type", "number");
+        input.setAttribute("disabled", "true");
+
+        input.addEventListener("keyup",  () => this.onkey())
+        input.addEventListener("change", () => this.onchange())
+
+        return input;
+    }
+    reset (input, def) {
+        if (isNumeric(input.value)) return ;
+        input.value = def.toString();
+    }
+    _first_render () {
+        this.inputs = [];
+        for (let idx = 0; idx < this.dimension; idx ++)
+            this.inputs.push(this.make_input());
+
+        this.element = createElement("div", {}, "flex p-2 gap-4", [
+            ...this.inputs
+        ]);
+    }
+    _render () {
+        return this.element;
+    }
+}

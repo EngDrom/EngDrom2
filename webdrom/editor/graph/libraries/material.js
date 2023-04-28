@@ -44,10 +44,14 @@ const MATERIAL_CATEGORY = (function () {
         vector_space_VEC_SCALAR,
         vector_space_VEC
     );
-    let const_vec1 = new MGraph_Function("Scalar",    vector_space_EMPTY, vec1.as_variant_vector_space("Scalar"));
-    let const_vec2 = new MGraph_Function("2D Vector", vector_space_EMPTY, vec2.as_variant_vector_space("Vector"));
-    let const_vec3 = new MGraph_Function("3D Vector", vector_space_EMPTY, vec3.as_variant_vector_space("Vector"));
-    let const_vec4 = new MGraph_Function("4D Vector", vector_space_EMPTY, vec4.as_variant_vector_space("Vector"));
+    let const_vec1 = new MGraph_Function("Scalar",    vector_space_EMPTY, vec1.as_variant_vector_space("Scalar"))
+        .add_parameter(new VecNParameter("Value", [ "const_x" ], 1));
+    let const_vec2 = new MGraph_Function("2D Vector", vector_space_EMPTY, vec2.as_variant_vector_space("Vector"))
+        .add_parameter(new VecNParameter("Value", [ "const_x", "const_y" ], 2));
+    let const_vec3 = new MGraph_Function("3D Vector", vector_space_EMPTY, vec3.as_variant_vector_space("Vector"))
+        .add_parameter(new VecNParameter("Value", [ "const_x", "const_y", "const_z" ], 3));
+    let const_vec4 = new MGraph_Function("4D Vector", vector_space_EMPTY, vec4.as_variant_vector_space("Vector"))
+        .add_parameter(new VecNParameter("Value", [ "const_x", "const_y", "const_z", "const_w" ], 4));
 
     let category_constants = new MGraph_Category(
         "Constant", [], [ const_vec1, const_vec2, const_vec3, const_vec4 ]

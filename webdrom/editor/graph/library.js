@@ -84,13 +84,19 @@ class MGraph_Function {
         this.name      = name;
         this.inp_space = input_space;
         this.out_space = output_space;
+        this.par_space = []
+    }
+    add_parameter (parameter) {
+        this.par_space.push(parameter);
+
+        return this;
     }
 
     as_node (parent, graph, x, y) {
         let input  = this.inp_space.as_ressource_array(parent, graph, false);
         let output = this.out_space.as_ressource_array(parent, graph, true);
 
-        let node = new MNode(parent, this.name, x, y, input, output);
+        let node = new MNode(parent, graph, this.name, x, y, input, output, this.par_space);
 
         return node;
     }
