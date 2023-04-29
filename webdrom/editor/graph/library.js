@@ -97,6 +97,7 @@ class MGraph_Function {
         let output = this.out_space.as_ressource_array(parent, graph, true);
 
         let node = new MNode(parent, graph, this.name, x, y, input, output, this.par_space);
+        node.library_function = this;
 
         return node;
     }
