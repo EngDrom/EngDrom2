@@ -14,12 +14,18 @@ class GraphEditor extends Component {
         this.properties_manager.set_target(node);
     }
     _first_render () {
+        this.graph = new MGraph(this);
+
         let tree = new MExplorer (this, { "text": "Explorer", "components": [
             { "text": "Project", "component": (parent) => new FileTree(parent).render(), "icons": []  },
             { "text": "Properties", "component": (parent) => {
                 this.properties_manager = new NodePropertiesComponent(parent);
                 return this.properties_manager.render()
-            }, "icons": [] }
+            }, "icons": [] },
+            { "text": "Compilation", "component": (parent) => {
+                this.compiler_component = new GraphCompilerComponent(parent, this.graph);
+                return this.compiler_component.render()
+            } }
         ] });
 
         let splitter = new MSplitter (this, "horizontal", undefined, true,
@@ -27,7 +33,7 @@ class GraphEditor extends Component {
                 tree.render()
             ]),
             createElement("div", {}, "", [
-                new MGraph(this).render()
+                this.graph.render()
             ])
         )
         splitter.sizes = [ 300, 800 ];
