@@ -64,7 +64,7 @@ class MaterialGraphValidation extends GraphValidation {
             for (let input of node.inputs) {
                 let target = input.parent?.node;
                 if (target === undefined)
-                    return false; // An input cannot be undefined
+                    return [ false, "All inputs must be linked", undefined ]; // An input cannot be undefined
                 
                 this.roads  [target.__validation_idx].push(node  .__validation_idx);
                 this.t_roads[node  .__validation_idx].push(target.__validation_idx);
@@ -73,7 +73,7 @@ class MaterialGraphValidation extends GraphValidation {
         
         for (let i = 0; i < N; i ++)
             if (this.cycle_dfs(i))
-                return false; // No cycle is allowed inside the graph
+                return [ false, "There exists a cycle in the material", undefined ]; // No cycle is allowed inside the graph
         
         for (let i = 0; i < N; i ++)
             this.visited[i] = false;
@@ -104,17 +104,17 @@ class MaterialGraphValidation extends GraphValidation {
             }
         }
 
-        if (count_vt_out != 1) return false;
-        if (count_fg_out != 1) return false;
-        if (count_fg_in  != 1) return false;
-        if (count_vt_in  != 1) return false;
+        if (count_vt_out != 1) return [ false, "Missing output vertex", undefined ];
+        if (count_fg_out != 1) return [ false, "Missing output fragment", undefined ];
+        if (count_fg_in  != 1) return [ false, "Missing input fragment", undefined ];
+        if (count_vt_in  != 1) return [ false, "Missing input vertex", undefined ];
 
         this.r_visited();
         if (this.search_dfs( pos_fg_out, MATERIAL_CATEGORY.functions.vertex_input ))
-            return false;
+            return [ false, "Vertex input cannot have an effect on fragment output", undefined ];
         this.r_visited();
         if (this.search_dfs( pos_vt_out, MATERIAL_CATEGORY.functions.fragment_input ))
-            return false;
+            return [ false, "Fragment input cannot have an effect on vertex output", undefined ];
 
         for (let i = 0; i < N; i ++) {
             let node_id = this.topological_sort[i];
@@ -150,13 +150,16 @@ class MaterialGraphValidation extends GraphValidation {
             }
 
             if (variant_id == -1)
-                return false;
+                return [ false, "Type validation could not be performed on node " + node_id, undefined ];
             node.__validation_variant_id = variant_id;
         }
 
-        return true;
+        return [ true, "Validation OK", {
+            pos_fg_out,
+            pos_vt_out
+        } ];
     }
-    compile (nodes) {
-
+    compile (nodes, context) {
+        console.log(nodes, context)
     }
 }

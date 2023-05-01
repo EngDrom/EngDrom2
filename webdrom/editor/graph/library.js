@@ -74,7 +74,7 @@ class MGraph_VariantVectorSpace {
         let result = [];
         
         for (let idx = 0; idx < this.names.length; idx ++)
-            result.push( new MNode_Ressource( parent, graph, this.names[idx], this.colors[idx], this.colors[idx], is_output ) );
+            result.push( new MNode_Ressource( parent, graph, this.names[idx], this.colors[idx], this.colors[idx], idx, is_output ) );
         
         return result;
     }
@@ -90,6 +90,9 @@ class MGraph_Function {
         this.par_space.push(parameter);
 
         return this;
+    }
+    serialize () {
+        return this.name;
     }
 
     as_node (parent, graph, x, y) {
@@ -116,6 +119,19 @@ class MGraph_Category {
         this.sub_categories = sub_categories;
         this.functions      = functions;
     }
+    get (name) {
+        for (let func of this.functions)
+            if (name === func.name)
+                return func;
+        
+        for (let cat of this.sub_categories) {
+            let res = cat.get(name);
+            if (res)
+                return res;
+        }
+
+        return undefined;
+    }
     as_ctxmenu_config (callback) {
         return {
             "type": "category",
@@ -133,5 +149,8 @@ class MGraph_Library {
     }
     as_ctxmenu_config (callback) {
         return this.category.as_ctxmenu_config(callback).childs;
+    }
+    get (name) {
+        return this.category.get(name);
     }
 }

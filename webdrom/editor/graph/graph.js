@@ -64,7 +64,7 @@ const GRAPH_BACKGROUND_TILING = 45;
  * Molyb Graph-Based Editor
  */
 class MGraph extends Component {
-    constructor (parent) {
+    constructor (parent, serialized = undefined) {
         super(parent);
 
         this.editor = parent;
@@ -76,7 +76,12 @@ class MGraph extends Component {
         this.nodes = [];
 
         this.current_ressource = undefined;
+
         this._first_render();
+
+        serialized = [{"node":0,"library":"Vertex Input","pos":{"x":149,"y":197},"inputs":[],"outputs":[{"parent":-1,"childs":[{"node_id":1,"vect_id":0}]},{"parent":-1,"childs":[{"node_id":1,"vect_id":1}]}]},{"node":1,"library":"Vertex Output","pos":{"x":612,"y":194},"inputs":[{"parent":{"node_id":0,"vect_id":0},"childs":[]},{"parent":{"node_id":0,"vect_id":1},"childs":[]}],"outputs":[]},{"node":2,"library":"Fragment Input","pos":{"x":143,"y":328},"inputs":[],"outputs":[{"parent":-1,"childs":[]},{"parent":-1,"childs":[]}]},{"node":3,"library":"4D Vector","pos":{"x":493,"y":329},"inputs":[],"outputs":[{"parent":-1,"childs":[{"node_id":4,"vect_id":0}]}]},{"node":4,"library":"Fragment Output","pos":{"x":855,"y":335},"inputs":[{"parent":{"node_id":3,"vect_id":0},"childs":[]}],"outputs":[]}]
+        if (serialized)
+            this.deserialize(serialized, MATERIAL_CATEGORY.library);
     }
     ressource_hover (res) {
         this.current_ressource = res;
@@ -179,13 +184,52 @@ class MGraph extends Component {
                 to_delete.destroy();
         })
     }
+    serialize () {
+        for (let iN = 0; iN < this.nodes.length; iN ++)
+            this.nodes[iN].__node_id = iN;
+
+        let result = [];
+        for (let iN = 0; iN < this.nodes.length; iN ++)
+            result.push(this.nodes[iN].serialize())
+        
+        return result;
+    }
+    deserialize (json, library) {
+        for (let json_node of json) {
+            let library_function = library.get(json_node.library);
+
+            let node = library_function.as_node(this, this, json_node.pos.x, json_node.pos.y);
+            this.nodes.push(node);
+        }
+
+        this._recompute_element();
+
+        for (let id_node = 0; id_node < json.length; id_node ++) {
+            let json_node = json[id_node];
+
+            for (let input_id = 0; input_id < json_node.inputs.length; input_id ++) {
+                let parent_data = json_node.inputs[input_id].parent;
+                if (parent_data === -1) continue ;
+
+                this.nodes[id_node].inputs[input_id].appendParent(
+                    this.nodes[parent_data.node_id].outputs[parent_data.vect_id]    
+                );
+            }
+        }
+
+        setTimeout(() => {
+            for (let node of this.nodes)
+                for (let inp of node.inputs)
+                    inp.computeLine();
+        }, 0);
+    }
     _render () {
         return this.rel_element;
     }
 }
 
 class MNode_Ressource extends Component {
-    constructor (parent, graph, name, node_type, color, is_output = false) {
+    constructor (parent, graph, name, node_type, color, vect_id, is_output = false) {
         super(parent);
 
         this.graph     = graph;
@@ -202,7 +246,25 @@ class MNode_Ressource extends Component {
 
         this.node = undefined;
 
+        this.vect_id = vect_id;
+
         this._first_render();
+    }
+    serialize_name () {
+        return {
+            node_id: this.node.__node_id,
+            vect_id: this.vect_id
+        }
+    }
+    serialize () {
+        let childs = []
+        for (let child of this.childs)
+            childs.push(child.serialize_name());
+        
+        return {
+            parent: this.parent ? this.parent.serialize_name() : -1,
+            childs
+        }
     }
     setNode (node) {
         this.node = node;
@@ -256,12 +318,12 @@ class MNode_Ressource extends Component {
 
     get_bubble_position () {
         return [
-            this.bubble                          .offsetLeft
-          + this.bubble.offsetParent             .offsetLeft
-          + this.bubble.offsetParent.offsetParent.offsetLeft,
-            this.bubble                          .offsetTop
-          + this.bubble.offsetParent             .offsetTop
-          + this.bubble.offsetParent.offsetParent.offsetTop
+            this.bubble                            ?.offsetLeft
+          + this.bubble?.offsetParent              ?.offsetLeft
+          + this.bubble?.offsetParent?.offsetParent?.offsetLeft,
+            this.bubble                            ?.offsetTop
+          + this.bubble?.offsetParent              ?.offsetTop
+          + this.bubble?.offsetParent?.offsetParent?.offsetTop
         ]
     }
 
@@ -335,6 +397,18 @@ class MNode extends Component {
         this.iy   = 0;
 
         this._first_render();
+    }
+
+    serialize () {
+        if (this.__node_id === undefined) throw '__node_id should be set before serializing';
+
+        return {
+            node:    this.__node_id,
+            library: this.library_function.serialize(),
+            pos: { x: this.x, y: this.y },
+            inputs:  this.inputs.map((x) => x.serialize()),
+            outputs: this.outputs.map((x) => x.serialize())
+        }
     }
     setBackground (ix, iy) {
         this.ix = ix;

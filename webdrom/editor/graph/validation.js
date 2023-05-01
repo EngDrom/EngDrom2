@@ -24,6 +24,7 @@ class GraphCompilerComponent extends Component {
         let nodes = graph.nodes;
         let validater = new MaterialGraphValidation();
         console.log(validater.isValid(nodes));
+        console.log(JSON.stringify(graph.serialize()))
     }
 
     _render () {
