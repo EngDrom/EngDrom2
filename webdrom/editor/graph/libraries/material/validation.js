@@ -25,10 +25,26 @@ class MaterialGraphValidation extends GraphValidation {
         this.visited[node] = true;
         this.topological_sort.push(node);
     }
+    search_dfs (node, func) {
+        if (this.nodes[node].library_function === func) return true;
+        if (this.visited[node]) return false;
+        this.visited[node] = true;
+
+        for (let prev of this.t_roads[node])
+            if (this.search_dfs(prev, func))
+                return true;
+        
+        return false;
+    }
+    r_visited () {
+        for (let i = 0; i < this.visited.length; i ++)
+            this.visited[i] = false;
+    }
     isValid (nodes) {
         let N = nodes.length;
         this.roads   = [];
         this.t_roads = [];
+        this.nodes   = nodes;
         
         this.visited  = [];
         this.visiting = [];
@@ -65,6 +81,40 @@ class MaterialGraphValidation extends GraphValidation {
         this.topological_sort = [];
         for (let i = 0; i < N; i ++)
             this.topological_sort_dfs(i);
+
+        let count_fg_in  = 0;
+        let count_fg_out = 0;
+        let count_vt_in  = 0;
+        let count_vt_out = 0;
+        let pos_fg_out;
+        let pos_vt_out;
+        for (let i = 0; i < N; i ++) {
+            let node = nodes[i];
+            let func = node.library_function;
+
+            if (MATERIAL_CATEGORY.functions.fragment_input  === func) count_fg_in  ++;
+            if (MATERIAL_CATEGORY.functions.fragment_output === func) {
+                count_fg_out ++;
+                pos_fg_out = i;
+            }
+            if (MATERIAL_CATEGORY.functions.vertex_input  === func) count_vt_in  ++;
+            if (MATERIAL_CATEGORY.functions.vertex_output === func) {
+                count_vt_out ++;
+                pos_vt_out = i;
+            }
+        }
+
+        if (count_vt_out != 1) return false;
+        if (count_fg_out != 1) return false;
+        if (count_fg_in  != 1) return false;
+        if (count_vt_in  != 1) return false;
+
+        this.r_visited();
+        if (this.search_dfs( pos_fg_out, MATERIAL_CATEGORY.functions.vertex_input ))
+            return false;
+        this.r_visited();
+        if (this.search_dfs( pos_vt_out, MATERIAL_CATEGORY.functions.fragment_input ))
+            return false;
 
         for (let i = 0; i < N; i ++) {
             let node_id = this.topological_sort[i];
@@ -105,5 +155,8 @@ class MaterialGraphValidation extends GraphValidation {
         }
 
         return true;
+    }
+    compile (nodes) {
+
     }
 }

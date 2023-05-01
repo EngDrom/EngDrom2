@@ -116,6 +116,23 @@ const MATERIAL_CATEGORY = (function () {
         vector_space_EMPTY
     );
 
+    let fragment_input = new MGraph_Function(
+        "Fragment Input",
+        vector_space_EMPTY,
+        new MGraph_VariantVectorSpace(
+            [ "Texture Coordinates", "Fragment Coordinates" ],
+            [ new MGraph_VectorSpace([ vec2, vec4 ]) ]
+        )
+    );
+    let fragment_output = new MGraph_Function(
+        "Fragment Output",
+        new MGraph_VariantVectorSpace(
+            [ "Output Color" ],
+            [ new MGraph_VectorSpace( [ vec4 ] ) ]
+        ),
+        vector_space_EMPTY
+    );
+
     let decompose2 = new MGraph_Function(
         "Decompose 2D Vector",
         vec2.as_variant_vector_space("Vector"),
@@ -171,8 +188,8 @@ const MATERIAL_CATEGORY = (function () {
     let category_communication = new MGraph_Category(
         "Communication",
         [
-            new MGraph_Category( "Input",   [], [ vertex_input ] ),
-            new MGraph_Category( "Output",  [], [ vertex_output ] ),
+            new MGraph_Category( "Input",   [], [ vertex_input, fragment_input ] ),
+            new MGraph_Category( "Output",  [], [ vertex_output, fragment_output ] ),
             new MGraph_Category( "Uniform", [], [
                 uniform_vec1,
                 uniform_vec2,
@@ -205,6 +222,30 @@ const MATERIAL_CATEGORY = (function () {
             mat3: mat3,
             mat4: mat4,
             sampler2D, sampler2D
+        },
+        functions: {
+            add_vector,
+            scale_vector,
+            matrix_vector_multiplication,
+            subtract_vector,
+
+            const_vec1,
+            const_vec2,
+            const_vec3,
+            const_vec4,
+
+            uniform_vec1,
+            uniform_vec2,
+            uniform_vec3,
+            uniform_vec4,
+            uniform_mat2,
+            uniform_mat3,
+            uniform_mat4,
+
+            vertex_input,
+            vertex_output,
+            fragment_input,
+            fragment_output
         },
         library: new MGraph_Library(root_category)
     }
