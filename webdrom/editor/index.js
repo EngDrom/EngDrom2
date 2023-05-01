@@ -45,11 +45,64 @@ class HomeProjectPage extends ProjectPage {
         ] });
         let config   = undefined
         
+        let tabs = createElement("div", {}, "h-8 w-full flex",[
+            new Onglet().render(),
+            new Onglet().render()
+        ])
+
+        let texteditor = createElement("div",{},"w-full h-full bg-Vwebdrom-light-background p-4 absolute top-8 right-0 text-white z-10 select-none text-xl",[])
+
+        let textarea=createElement("textarea", {}, "w-full h-full bg-Vwebdrom-light-background p-4  absolute text-none top-8 right-0",[])
+
+        textarea.addEventListener("keydown",(e) => {
+            if (e.key == 'Tab') {
+              e.preventDefault();
+              var start = textarea.selectionStart;
+              var end = textarea.selectionEnd;
+          
+              // set textarea value to: text before caret + tab + text after caret
+              texteditor.innerHTML = texteditor.innerHTML.substring(0, start) +
+                "    " + texteditor.innerHTML.substring(end);
+          
+              // put caret at right position again
+              textarea.selectionStart =
+              textarea.selectionEnd = start + 4;
+            }
+            texteditor.innerHTML += String.fromCharCode(e.keyCode)
+            setTimeout(() => {
+                let line_number = texteditor.innerHTML.substr(0, texteditor.selectionStart).split("\n").length
+                let pos0 = texteditor.innerHTML.substr(0, texteditor.selectionStart).length;
+                let line = texteditor.innerHTML.substr(0, texteditor.selectionStart).split("\n")[line_number-1]
+                let lexer = new Dromadaire.Lexer(new Dromadaire.File(line,"index.dmd")).build()
+                let color={
+                    1:"#123456",
+                    2:"#234567",
+                    3:"#345678",
+                    4:"#456789"
+                }
+                for(let i =0;i<lexer.length;i++){
+                    if(lexer[i].__type==17){
+                        continue;
+                    }
+                    texteditor.innerHTML = texteditor.innerHTML.substring(0, pos0+lexer[i].column) + "<span style='color:"+color[lexer[i].__type]+"'>"+line.substr(lexer[i].columnn,lexer[i].size)+"</span>"+texteditor.innerHTML.substring(pos0+lexer[i].column+lexer[i].size+35);
+                    pos0+=35;
+                }
+                console.log(lexer)
+
+            },0)
+          })
+
+        let onglets= createElement("div", {}, "w-full h-full relative", [
+            tabs,
+            texteditor,
+            textarea
+        ])
+
         let splitter = new MSplitter (this, "horizontal", undefined, true,
             createElement("div", {}, "w-full h-full bg-Vwebdrom-light-background", [
                 tree.render()
             ]),
-            this.engine.render()
+            onglets
         )
         splitter.sizes = [ 400, 0 ];
         this.element = createElement("div", {}, "h-full", [
