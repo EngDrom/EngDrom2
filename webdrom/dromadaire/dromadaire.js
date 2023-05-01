@@ -1051,6 +1051,6 @@ const Dromadaire = ( function () {
         evaluate (context) { return this.value; }
     }
 
-    return { File, Lexer, RuleCompiler, TokenTypes: TOKEN_TYPES, compile }
+    return { File, Lexer, RuleCompiler, TokenTypes: TOKEN_TYPES, compile , TokenTypesById : TOKEN_TYPE_BY_ID}
 } )();
 

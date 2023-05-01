@@ -361,7 +361,7 @@ class _Tailwind {
         const size = this.to_size(style);
         const color = this.to_color(style);
         const custom = this.to_custom(style);
-
+        if (style == "none") return "color:transparent;"
         if (style == "center")  return "text-align: center;"
         if (style == "left")    return "text-align: left;"
         if (style == "right")   return "text-align: right;"
@@ -369,7 +369,6 @@ class _Tailwind {
         if (color) return `color: ${color};`
         if (custom) return `color: ${custom};`
         if (size) return `font-size: ${size * 2 + 10}px; line-height: ${size < 5 ? 0.25 * size + 0.75 : 0.17 * size + 0.75}rem;`
-
         console.log(`Unhandled style for text property "${style}"`)
     }
     _tailwind_w (style) {
@@ -629,6 +628,9 @@ class _Tailwind {
     }
     _tailwind_uppercase (style) {
         return "text-transform: uppercase;"
+    }
+    _tailwind_select(style){
+        return `pointer-events:${style};`
     }
 }
 
