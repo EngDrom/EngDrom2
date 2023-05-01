@@ -156,10 +156,9 @@ class MaterialGraphValidation extends GraphValidation {
 
         return [ true, "Validation OK", {
             pos_fg_out,
-            pos_vt_out
+            pos_vt_out,
+            roads: this.roads,
+            t_roads: this.t_roads
         } ];
-    }
-    compile (nodes, context) {
-        console.log(nodes, context)
     }
 }

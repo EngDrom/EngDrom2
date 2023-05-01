@@ -5,16 +5,16 @@ const MATERIAL_CATEGORY = (function () {
     const MATRIX_COLOR  = "#5B8B9E";
     const TEXTURE_COLOR = "#AF5D63";
 
-    let vec1 = new MGraph_Type("Scalar", FLOAT_COLOR);
-    let vec2 = new MGraph_Type("2D Vector", FLOAT_COLOR);
-    let vec3 = new MGraph_Type("3D Vector", FLOAT_COLOR);
-    let vec4 = new MGraph_Type("4D Vector", FLOAT_COLOR);
+    let vec1 = new MGraph_Type("float", FLOAT_COLOR);
+    let vec2 = new MGraph_Type("vec2", FLOAT_COLOR);
+    let vec3 = new MGraph_Type("vec3", FLOAT_COLOR);
+    let vec4 = new MGraph_Type("vec4", FLOAT_COLOR);
 
-    let mat2 = new MGraph_Type("2D Matrix", MATRIX_COLOR);
-    let mat3 = new MGraph_Type("3D Matrix", MATRIX_COLOR);
-    let mat4 = new MGraph_Type("4D Matrix", MATRIX_COLOR);
+    let mat2 = new MGraph_Type("mat2", MATRIX_COLOR);
+    let mat3 = new MGraph_Type("mat3", MATRIX_COLOR);
+    let mat4 = new MGraph_Type("mat4", MATRIX_COLOR);
 
-    let sampler2D = new MGraph_Type("2D Texture", TEXTURE_COLOR);
+    let sampler2D = new MGraph_Type("sampler2D", TEXTURE_COLOR);
 
     let vector_space_VEC_SCALAR = new MGraph_VariantVectorSpace(
         [ "Vector", "Scalar" ],
@@ -52,17 +52,17 @@ const MATERIAL_CATEGORY = (function () {
         "Scale",
         vector_space_VEC_SCALAR,
         vector_space_VEC
-    );
+    ).modify("compile", [(type, _var, node, inp) => `${type} ${_var} = ${inp[0]} * ${inp[1]};`]);
     let add_vector = new MGraph_Function(
         "Add",
         vector_space_VEC_VEC,
         vector_space_VEC
-    );
+    ).modify("compile", [(type, _var, node, inp) => `${type} ${_var} = ${inp[0]} + ${inp[1]};`]);
     let subtract_vector = new MGraph_Function(
         "Subtract",
         vector_space_VEC_VEC,
         vector_space_VEC
-    );
+    ).modify("compile", [(type, _var, node, inp) => `${type} ${_var} = ${inp[0]} - ${inp[1]};`]);
     let matrix_vector_multiplication = new MGraph_Function(
         "Matrix-Vector Multiplication",
         new MGraph_VariantVectorSpace(
@@ -81,24 +81,35 @@ const MATERIAL_CATEGORY = (function () {
                 new MGraph_VectorSpace( [ vec4 ] )
             ]
         )
-    )
+    ).modify("compile", [(type, _var, node, inp) => `${type} ${_var} = ${inp[0]} * ${inp[1]};`]);
 
     let const_vec1 = new MGraph_Function("Scalar",    vector_space_EMPTY, vec1.as_variant_vector_space("Scalar"))
-        .add_parameter(new VecNParameter("Value", [ "const_x" ], 1));
+        .add_parameter(new VecNParameter("Value", [ "const_x" ], 1))
+        .modify("compile", [(type, _var, node, inp) => `${type} ${_var} = ${node.const_x};`]);
     let const_vec2 = new MGraph_Function("2D Vector", vector_space_EMPTY, vec2.as_variant_vector_space("Vector"))
-        .add_parameter(new VecNParameter("Value", [ "const_x", "const_y" ], 2));
+        .add_parameter(new VecNParameter("Value", [ "const_x", "const_y" ], 2))
+        .modify("compile", [(type, _var, node, inp) => `${type} ${_var} = vec2(${node.const_x}, ${node.const_y});`]);
     let const_vec3 = new MGraph_Function("3D Vector", vector_space_EMPTY, vec3.as_variant_vector_space("Vector"))
-        .add_parameter(new VecNParameter("Value", [ "const_x", "const_y", "const_z" ], 3));
+        .add_parameter(new VecNParameter("Value", [ "const_x", "const_y", "const_z" ], 3))
+        .modify("compile", [(type, _var, node, inp) => `${type} ${_var} = vec3(${node.const_x}, ${node.const_y}, ${node.const_z});`]);
     let const_vec4 = new MGraph_Function("4D Vector", vector_space_EMPTY, vec4.as_variant_vector_space("Vector"))
-        .add_parameter(new VecNParameter("Value", [ "const_x", "const_y", "const_z", "const_w" ], 4));
+        .add_parameter(new VecNParameter("Value", [ "const_x", "const_y", "const_z", "const_w" ], 4))
+        .modify("compile", [(type, _var, node, inp) => `${type} ${_var} = vec4(${node.const_x}, ${node.const_y}, ${node.const_z}, ${node.const_w});`]);
 
-    let uniform_vec1 = new MGraph_Function("Uniform Scalar", vector_space_EMPTY, vec1.as_variant_vector_space("Scalar"));
-    let uniform_vec2 = new MGraph_Function("Uniform 2D Vector", vector_space_EMPTY, vec2.as_variant_vector_space("Vector"));
-    let uniform_vec3 = new MGraph_Function("Uniform 3D Vector", vector_space_EMPTY, vec3.as_variant_vector_space("Vector"));
-    let uniform_vec4 = new MGraph_Function("Uniform 4D Vector", vector_space_EMPTY, vec4.as_variant_vector_space("Vector"));
-    let uniform_mat2 = new MGraph_Function("Uniform 2D Matrix", vector_space_EMPTY, mat2.as_variant_vector_space("Matrix"));
-    let uniform_mat3 = new MGraph_Function("Uniform 3D Matrix", vector_space_EMPTY, mat3.as_variant_vector_space("Matrix"));
-    let uniform_mat4 = new MGraph_Function("Uniform 4D Matrix", vector_space_EMPTY, mat4.as_variant_vector_space("Matrix"));
+    let uniform_vec1 = new MGraph_Function("Uniform Scalar", vector_space_EMPTY, vec1.as_variant_vector_space("Scalar"))
+        .modify("uniform", true);
+    let uniform_vec2 = new MGraph_Function("Uniform 2D Vector", vector_space_EMPTY, vec2.as_variant_vector_space("Vector"))
+        .modify("uniform", true);
+    let uniform_vec3 = new MGraph_Function("Uniform 3D Vector", vector_space_EMPTY, vec3.as_variant_vector_space("Vector"))
+        .modify("uniform", true);
+    let uniform_vec4 = new MGraph_Function("Uniform 4D Vector", vector_space_EMPTY, vec4.as_variant_vector_space("Vector"))
+        .modify("uniform", true);
+    let uniform_mat2 = new MGraph_Function("Uniform 2D Matrix", vector_space_EMPTY, mat2.as_variant_vector_space("Matrix"))
+        .modify("uniform", true);
+    let uniform_mat3 = new MGraph_Function("Uniform 3D Matrix", vector_space_EMPTY, mat3.as_variant_vector_space("Matrix"))
+        .modify("uniform", true);
+    let uniform_mat4 = new MGraph_Function("Uniform 4D Matrix", vector_space_EMPTY, mat4.as_variant_vector_space("Matrix"))
+        .modify("uniform", true);
 
     let vertex_input = new MGraph_Function( 
         "Vertex Input", vector_space_EMPTY, 
@@ -106,7 +117,7 @@ const MATERIAL_CATEGORY = (function () {
             [ "Position", "Texture Coordinates" ], 
             [ new MGraph_VectorSpace([ vec3, vec2 ]) 
         ])
-    );
+    ).modify( "in_loc", [ "vertexPosition", "textureCoordinates" ] );
     let vertex_output = new MGraph_Function(
         "Vertex Output", 
         new MGraph_VariantVectorSpace(
@@ -139,42 +150,42 @@ const MATERIAL_CATEGORY = (function () {
         new MGraph_VariantVectorSpace( [ "x", "y" ], [
             new MGraph_VectorSpace([ vec1, vec1 ])
         ])
-    );
+    ).modify("shortcuts", [ (i) => i[0] + ".x", (i) => i[0] + ".y" ]);
     let decompose3 = new MGraph_Function(
         "Decompose 3D Vector",
         vec3.as_variant_vector_space("Vector"),
         new MGraph_VariantVectorSpace( [ "x", "y", "z" ], [
             new MGraph_VectorSpace([ vec1, vec1, vec1 ])
         ])
-    );
+    ).modify("shortcuts", [ (i) => i[0] + ".x", (i) => i[0] + ".y", (i) => i[0] + ".z" ]);
     let decompose4 = new MGraph_Function(
         "Decompose 4D Vector",
         vec4.as_variant_vector_space("Vector"),
         new MGraph_VariantVectorSpace( [ "x", "y", "z", "w" ], [
             new MGraph_VectorSpace([ vec1, vec1, vec1, vec1 ])
         ])
-    );
+    ).modify("shortcuts", [ (i) => i[0] + ".x", (i) => i[0] + ".y", (i) => i[0] + ".z", (i) => i[0] + ".w" ]);
     let compose2 = new MGraph_Function(
         "Compose 2D Vector",
         new MGraph_VariantVectorSpace( [ "x", "y" ], [
             new MGraph_VectorSpace([ vec1, vec1 ])
         ]),
         vec2.as_variant_vector_space("Vector")
-    );
+    ).modify("compile", [ (type, _var, node, inp) => `${type} ${_var} = vec2(${inp[0]}, ${inp[1]});` ]);
     let compose3 = new MGraph_Function(
         "Compose 3D Vector",
         new MGraph_VariantVectorSpace( [ "x", "y", "z" ], [
             new MGraph_VectorSpace([ vec1, vec1, vec1 ])
         ]),
         vec3.as_variant_vector_space("Vector")
-    );
+    ).modify("compile", [ (type, _var, node, inp) => `${type} ${_var} = vec3(${inp[0]}, ${inp[1]}, ${inp[2]});` ]);
     let compose4 = new MGraph_Function(
         "Compose 4D Vector",
         new MGraph_VariantVectorSpace( [ "x", "y", "z", "w" ], [
             new MGraph_VectorSpace([ vec1, vec1, vec1, vec1 ])
         ]),
         vec4.as_variant_vector_space("Vector")
-    );
+    ).modify("compile", [ (type, _var, node, inp) => `${type} ${_var} = vec4(${inp[0]}, ${inp[1]}, ${inp[2]}, ${inp[3]});` ]);
 
     let category_constants = new MGraph_Category(
         "Constant", [], [ const_vec1, const_vec2, const_vec3, const_vec4 ]

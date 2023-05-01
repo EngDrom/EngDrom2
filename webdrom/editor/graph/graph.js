@@ -79,7 +79,7 @@ class MGraph extends Component {
 
         this._first_render();
 
-        serialized = [{"node":0,"library":"Vertex Input","pos":{"x":149,"y":197},"inputs":[],"outputs":[{"parent":-1,"childs":[{"node_id":1,"vect_id":0}]},{"parent":-1,"childs":[{"node_id":1,"vect_id":1}]}]},{"node":1,"library":"Vertex Output","pos":{"x":612,"y":194},"inputs":[{"parent":{"node_id":0,"vect_id":0},"childs":[]},{"parent":{"node_id":0,"vect_id":1},"childs":[]}],"outputs":[]},{"node":2,"library":"Fragment Input","pos":{"x":143,"y":328},"inputs":[],"outputs":[{"parent":-1,"childs":[]},{"parent":-1,"childs":[]}]},{"node":3,"library":"4D Vector","pos":{"x":493,"y":329},"inputs":[],"outputs":[{"parent":-1,"childs":[{"node_id":4,"vect_id":0}]}]},{"node":4,"library":"Fragment Output","pos":{"x":855,"y":335},"inputs":[{"parent":{"node_id":3,"vect_id":0},"childs":[]}],"outputs":[]}]
+        serialized = [{"node":0,"library":"Vertex Input","parameters":[],"pos":{"x":149,"y":197},"inputs":[],"outputs":[{"parent":-1,"childs":[{"node_id":1,"vect_id":0}]},{"parent":-1,"childs":[{"node_id":1,"vect_id":1}]}]},{"node":1,"library":"Vertex Output","parameters":[],"pos":{"x":612,"y":194},"inputs":[{"parent":{"node_id":0,"vect_id":0},"childs":[]},{"parent":{"node_id":0,"vect_id":1},"childs":[]}],"outputs":[]},{"node":2,"library":"Fragment Input","parameters":[],"pos":{"x":143,"y":328},"inputs":[],"outputs":[{"parent":-1,"childs":[]},{"parent":-1,"childs":[]}]},{"node":3,"library":"4D Vector","parameters":[{"const_x":1,"const_y":2,"const_z":3.4,"const_w":5}],"pos":{"x":493,"y":329},"inputs":[],"outputs":[{"parent":-1,"childs":[{"node_id":5,"vect_id":0}]}]},{"node":4,"library":"Fragment Output","parameters":[],"pos":{"x":855,"y":335},"inputs":[{"parent":{"node_id":6,"vect_id":0},"childs":[]}],"outputs":[]},{"node":5,"library":"Decompose 4D Vector","parameters":[],"pos":{"x":467,"y":463},"inputs":[{"parent":{"node_id":3,"vect_id":0},"childs":[]}],"outputs":[{"parent":-1,"childs":[{"node_id":6,"vect_id":0}]},{"parent":-1,"childs":[{"node_id":6,"vect_id":1}]},{"parent":-1,"childs":[{"node_id":6,"vect_id":2}]},{"parent":-1,"childs":[{"node_id":6,"vect_id":3}]}]},{"node":6,"library":"Compose 4D Vector","parameters":[],"pos":{"x":800,"y":466},"inputs":[{"parent":{"node_id":5,"vect_id":0},"childs":[]},{"parent":{"node_id":5,"vect_id":1},"childs":[]},{"parent":{"node_id":5,"vect_id":2},"childs":[]},{"parent":{"node_id":5,"vect_id":3},"childs":[]}],"outputs":[{"parent":-1,"childs":[{"node_id":4,"vect_id":0}]}]}]
         if (serialized)
             this.deserialize(serialized, MATERIAL_CATEGORY.library);
     }
@@ -199,6 +199,7 @@ class MGraph extends Component {
             let library_function = library.get(json_node.library);
 
             let node = library_function.as_node(this, this, json_node.pos.x, json_node.pos.y);
+            library_function.deserialize_properties( node, json_node.parameters );
             this.nodes.push(node);
         }
 
@@ -405,6 +406,7 @@ class MNode extends Component {
         return {
             node:    this.__node_id,
             library: this.library_function.serialize(),
+            parameters: this.library_function.serialize_properties(this),
             pos: { x: this.x, y: this.y },
             inputs:  this.inputs.map((x) => x.serialize()),
             outputs: this.outputs.map((x) => x.serialize())

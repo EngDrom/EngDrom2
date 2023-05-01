@@ -5,6 +5,8 @@ class Parameter {
     create (parent, node) {
         throw 'Parameter.create is an abstract function'
     }
+    serialize (node) { throw 'Parameter.serialize is an abstract function' }
+    deserialize (node, property) { throw 'Parameter.serialize is an abstract function' }
 }
 
 class VecNParameter extends Parameter {
@@ -24,6 +26,17 @@ class VecNParameter extends Parameter {
         input_manager.setValue(...(this.tar.map((x) => node[x] ?? 0)));
 
         return input_manager.render();
+    }
+    serialize (node) {
+        let properties = {}
+        for (let i = 0; i < this.dim; i ++)
+            properties[this.tar[i]] = node[this.tar[i]]
+        
+        return properties
+    }
+    deserialize (node, properties) {
+        for (let i = 0; i < this.dim; i ++)
+            node[this.tar[i]] = properties[this.tar[i]] ? properties[this.tar[i]] : 0;
     }
 };
 

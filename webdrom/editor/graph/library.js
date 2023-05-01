@@ -86,6 +86,10 @@ class MGraph_Function {
         this.out_space = output_space;
         this.par_space = []
     }
+    modify (name, value) {
+        this[name] = value;
+        return this;
+    }
     add_parameter (parameter) {
         this.par_space.push(parameter);
 
@@ -93,6 +97,19 @@ class MGraph_Function {
     }
     serialize () {
         return this.name;
+    }
+    serialize_properties (node) {
+        let properties = [];
+        for (let param of this.par_space)
+            properties.push(param.serialize(node))
+
+        return properties;
+    }
+    deserialize_properties(node, properties) {
+        if (properties === undefined) return ;
+
+        for (let iP = 0; iP < this.par_space.length; iP ++)
+            this.par_space[iP].deserialize(node, properties[iP]);
     }
 
     as_node (parent, graph, x, y) {
