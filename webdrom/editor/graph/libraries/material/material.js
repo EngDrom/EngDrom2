@@ -1,6 +1,11 @@
 
 
 const MATERIAL_CATEGORY = (function () {
+    function as_float (value) {
+        let s = "" + value;
+        if (s.includes(".")) return s;
+        return s + ".0";
+    }
     const FLOAT_COLOR   = "#45B69C";
     const MATRIX_COLOR  = "#5B8B9E";
     const TEXTURE_COLOR = "#AF5D63";
@@ -85,7 +90,7 @@ const MATERIAL_CATEGORY = (function () {
 
     let const_vec1 = new MGraph_Function("Scalar",    vector_space_EMPTY, vec1.as_variant_vector_space("Scalar"))
         .add_parameter(new VecNParameter("Value", [ "const_x" ], 1))
-        .modify("compile", [(type, _var, node, inp) => `${type} ${_var} = ${node.const_x};`]);
+        .modify("compile", [(type, _var, node, inp) => `${type} ${_var} = ${as_float( node.const_x )};`]);
     let const_vec2 = new MGraph_Function("2D Vector", vector_space_EMPTY, vec2.as_variant_vector_space("Vector"))
         .add_parameter(new VecNParameter("Value", [ "const_x", "const_y" ], 2))
         .modify("compile", [(type, _var, node, inp) => `${type} ${_var} = vec2(${node.const_x}, ${node.const_y});`]);
@@ -97,19 +102,26 @@ const MATERIAL_CATEGORY = (function () {
         .modify("compile", [(type, _var, node, inp) => `${type} ${_var} = vec4(${node.const_x}, ${node.const_y}, ${node.const_z}, ${node.const_w});`]);
 
     let uniform_vec1 = new MGraph_Function("Uniform Scalar", vector_space_EMPTY, vec1.as_variant_vector_space("Scalar"))
-        .modify("uniform", true);
+        .modify("uniform", true)
+        .add_parameter( new NameParameter("Name", "uniform_name") );
     let uniform_vec2 = new MGraph_Function("Uniform 2D Vector", vector_space_EMPTY, vec2.as_variant_vector_space("Vector"))
-        .modify("uniform", true);
+        .modify("uniform", true)
+        .add_parameter( new NameParameter("Name", "uniform_name") );
     let uniform_vec3 = new MGraph_Function("Uniform 3D Vector", vector_space_EMPTY, vec3.as_variant_vector_space("Vector"))
-        .modify("uniform", true);
+        .modify("uniform", true)
+        .add_parameter( new NameParameter("Name", "uniform_name") );
     let uniform_vec4 = new MGraph_Function("Uniform 4D Vector", vector_space_EMPTY, vec4.as_variant_vector_space("Vector"))
-        .modify("uniform", true);
+        .modify("uniform", true)
+        .add_parameter( new NameParameter("Name", "uniform_name") );
     let uniform_mat2 = new MGraph_Function("Uniform 2D Matrix", vector_space_EMPTY, mat2.as_variant_vector_space("Matrix"))
-        .modify("uniform", true);
+        .modify("uniform", true)
+        .add_parameter( new NameParameter("Name", "uniform_name") );
     let uniform_mat3 = new MGraph_Function("Uniform 3D Matrix", vector_space_EMPTY, mat3.as_variant_vector_space("Matrix"))
-        .modify("uniform", true);
+        .modify("uniform", true)
+        .add_parameter( new NameParameter("Name", "uniform_name") );
     let uniform_mat4 = new MGraph_Function("Uniform 4D Matrix", vector_space_EMPTY, mat4.as_variant_vector_space("Matrix"))
-        .modify("uniform", true);
+        .modify("uniform", true)
+        .add_parameter( new NameParameter("Name", "uniform_name") );
 
     let vertex_input = new MGraph_Function( 
         "Vertex Input", vector_space_EMPTY, 
@@ -122,10 +134,10 @@ const MATERIAL_CATEGORY = (function () {
         "Vertex Output", 
         new MGraph_VariantVectorSpace(
             [ "Position", "Texture Coordinates" ],
-            [ new MGraph_VectorSpace([ vec3, vec2 ]) ]
+            [ new MGraph_VectorSpace([ vec4, vec2 ]) ]
         ),
         vector_space_EMPTY
-    );
+    ).modify("compile", [(type, _var, node, inp) => `gl_Position = ${inp[0]}; out_textCoord = ${inp[1]};`]);
 
     let fragment_input = new MGraph_Function(
         "Fragment Input",
@@ -134,7 +146,7 @@ const MATERIAL_CATEGORY = (function () {
             [ "Texture Coordinates", "Fragment Coordinates" ],
             [ new MGraph_VectorSpace([ vec2, vec4 ]) ]
         )
-    );
+    ).modify( "in_loc", [ "out_textCoord", "gl_FragCoord" ] );
     let fragment_output = new MGraph_Function(
         "Fragment Output",
         new MGraph_VariantVectorSpace(
@@ -142,7 +154,7 @@ const MATERIAL_CATEGORY = (function () {
             [ new MGraph_VectorSpace( [ vec4 ] ) ]
         ),
         vector_space_EMPTY
-    );
+    ).modify("compile", [(type, _var, node, inp) => `gl_FragColor = ${inp[0]};`]);
 
     let decompose2 = new MGraph_Function(
         "Decompose 2D Vector",

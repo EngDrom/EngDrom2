@@ -40,6 +40,31 @@ class VecNParameter extends Parameter {
     }
 };
 
+class NameParameter extends Parameter {
+    constructor (name, target_name) {
+        super(name);
+
+        this.tar = target_name
+    }
+
+    create (parent, node) {
+        let input = createElement("input", {}, "bg-Vwebdrom-background text-Vwebdrom-editor-text p-2 rounded-8", []);
+
+        input.value = node[this.tar] ?? "";
+
+        input.addEventListener("keyup",  () => node[this.tar] = input.value)
+        input.addEventListener("change", () => node[this.tar] = input.value)
+
+        return input;
+    }
+
+    serialize (node) {
+        return node[this.tar];
+    }
+    deserialize (node, properties) {
+        node[this.tar] = properties
+    }
+}
 
 class NodePropertiesComponent extends Component {
     constructor (parent) {
