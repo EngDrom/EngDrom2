@@ -35,10 +35,11 @@ class WebGLCanvas extends Component {
         attribute vec3 aVertexColor;
         uniform mat4 mModel;
         uniform mat4 mProj;
+        uniform mat4 mCamera;
         varying lowp vec4 vColor;
         
         void main(void) {
-          gl_Position = mProj * mModel * vec4(aVertexPosition, 1.0);
+          gl_Position = mProj * mCamera * mModel * vec4(aVertexPosition, 1.0);
           vColor = vec4(aVertexColor, 1.0);
         }`, `varying lowp vec4 vColor;
         
@@ -60,6 +61,8 @@ class WebGLCanvas extends Component {
         )
         this.cube1 = new MeshInstance(this.web_gl, this.mesh, new Transform(0, 0, 0, 0, 0, 0, 2, 1, 1))
         this.cube2 = new MeshInstance(this.web_gl, this.mesh, new Transform(0, 0, 0, 0, 0, 0, 1, 2, 1))
+        
+        this.camera = new Camera();
     }
     clear () {
         this.web_gl.clearColor(0.0, 0.0, 0.0, 1.0)
@@ -72,8 +75,8 @@ class WebGLCanvas extends Component {
         this._runComputations();
 
         this.clear();
-        this.cube1.render(this.shader);
-        this.cube2.render(this.shader);
+        this.cube1.render(this.shader, this.camera);
+        this.cube2.render(this.shader, this.camera);
     }
 
     _runComputations () {
@@ -90,8 +93,8 @@ class WebGLCanvas extends Component {
         this.raytracer = new RayTracer();
         
         this.clear();
-        this.cube1.renderRTS(this.raytracer);
-        this.cube2.renderRTS(this.raytracer);
+        this.cube1.renderRTS(this.raytracer, this.camera);
+        this.cube2.renderRTS(this.raytracer, this.camera);
 
         return this.getBuffer();
     }
