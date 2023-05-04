@@ -3,10 +3,11 @@ const RAYTRACER_SHADER = [ `attribute vec3 aVertexPosition;
 uniform vec3 uniqueColor;
 uniform mat4 mModel;
 uniform mat4 mProj;
+uniform mat4 mCamera;
 varying lowp vec4 vColor;
 
 void main(void) {
-  gl_Position = mProj * mModel * vec4(aVertexPosition, 1.0);
+  gl_Position = mProj * mCamera * mModel * vec4(aVertexPosition, 1.0);
   vColor = vec4(uniqueColor, 1.0);
 }`, `varying lowp vec4 vColor;
 

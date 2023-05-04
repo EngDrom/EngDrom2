@@ -2,49 +2,30 @@
 
 class Camera {
     constructor () {
-        this.x = 0;
-        this.y = 0;
-        this.z = 0;
-        this.rx = 0;
-        this.ry = 0;
-        this.rz = 0;
-
-        this.__transform = undefined;
-    }
-    _transform () {
-        this.__transform = new Transform(-this.x, -this.y, this.z, -this.rx, -this.ry, -this.rz);
+        this.sri = new SRI();
     }
     transform () {
-        if (this.__transform === undefined)
-            this. _transform();
-        return this.__transform;
-    }
+        let comp = this.sri.get_components();
 
-    setX(x) {
-        this.x = x;
-        this.__transform = undefined;
-    }
-    setY(y) {
-        this.y = y;
-        this.__transform = undefined;
-    }
-    setZ(z) {
-        this.z = z;
-        this.__transform = undefined;
-    }
-    translate (dx, dy, dz) {
-        this.x += dx;
-        this.y += dy;
-        this.z += dz;
+        let [ x,  y,  z] = comp.position;
+        let [rx, ry, rz] = comp.rotation;
+        let [sx, sy, sz] = comp.scale;
 
-        this.__transform = undefined;
+        return new Transform(- x, - y, z, - rx, - ry, rz, sx, sy, sz);
     }
-    rotate (dx, dy, dz) {
-        this.rx += dx;
-        this.ry += dy;
-        this.rz += dz;
-
-        this.__transform = undefined;
+    integrate (delta_t) {
+        this.sri.integrate(delta_t);
+    }
+    
+    accelerate (dx, dy, dz) {
+        this.sri.position.acc.x += dx;
+        this.sri.position.acc.y += dy;
+        this.sri.position.acc.z += dz;
+    }
+    velocity (dx, dy, dz) {
+        this.sri.position.spe.x += dx;
+        this.sri.position.spe.y += dy;
+        this.sri.position.spe.z += dz;
     }
 }
 

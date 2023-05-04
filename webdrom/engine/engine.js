@@ -13,7 +13,7 @@ class WebEngine {
         this.start_interval = end_interval;
 
         //this.level .simulate(delta_interval); // simulate dt milliseconds
-        this.canvas.drawCallback();
+        this.canvas.drawCallback(delta_interval);
 
         // TODO run events
     }

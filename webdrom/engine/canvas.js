@@ -7,8 +7,38 @@ class WebGLCanvas extends Component {
         this.engine = engine;
     }
 
+    startkeypress (key) {
+        if (key == "ArrowRight") this.camera.velocity( 1, 0, 0);
+        if (key == "ArrowLeft")  this.camera.velocity(-1, 0, 0);
+        if (key == "ArrowUp")    this.camera.velocity( 0, 1, 0);
+        if (key == "ArrowDown")  this.camera.velocity( 0,-1, 0);
+    }
+    endkeypress (key) {
+        if (key == "ArrowRight") this.camera.velocity(-1, 0, 0);
+        if (key == "ArrowLeft")  this.camera.velocity( 1, 0, 0);
+        if (key == "ArrowUp")    this.camera.velocity( 0,-1, 0);
+        if (key == "ArrowDown")  this.camera.velocity( 0, 1, 0);
+    }
+
     _first_render () {
         this.canvas = createElement("canvas", { onclick: (ev) => this.onClick(ev) }, "w-full h-full", []);
+        this.keys   = {}
+
+        document.addEventListener("keyup", (event) => {
+            if (!this.keys[event.key]) return ;
+            this.keys[event.key] = undefined;
+            
+            this.endkeypress(event.key);
+        })
+        document.addEventListener("keydown", (event) => {
+            if (!this.canvas.classList.contains("active")
+             || !this.canvas.checkVisibility()) return ;
+            if (this.keys[event.key]) return ;
+
+            this.keys[event.key] = true;
+            this.startkeypress(event.key);
+        })
+        
         this.component = createElement("div", {}, "w-full", [
             createElement("div", {}, "w-full h-full overflow-none", [
                 this.canvas
@@ -71,8 +101,10 @@ class WebGLCanvas extends Component {
         this.web_gl.depthFunc(this.web_gl.LEQUAL);
         this.web_gl.clear(this.web_gl.COLOR_BUFFER_BIT | this.web_gl.DEPTH_BUFFER_BIT);
     }
-    drawCallback () {
+    drawCallback (delta_interval) {
         this._runComputations();
+
+        this.camera.integrate(delta_interval / 1000.0);
 
         this.clear();
         this.cube1.render(this.shader, this.camera);
