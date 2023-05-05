@@ -16,7 +16,7 @@ class Onglet extends Component {
             ])]),
             createElement("div", {}, "",[
                 createElement("div", {}, "h-min center-h",[
-            createElement("img", {"src": "text/close.png"}, "w-3 h-3",[])
+            createElement("img", {"src": "webdrom/editor/text/close.png"}, "w-3 h-3",[])
             ])])
         ])
     }

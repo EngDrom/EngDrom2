@@ -364,7 +364,7 @@ class _Tailwind {
         const color = this.to_color(style);
         const custom = this.to_custom(style);
         const variable = this.to_var(style)
-
+        if (style == "none") return "color:transparent;"
         if (style == "center")  return "text-align: center;"
         if (style == "left")    return "text-align: left;"
         if (style == "right")   return "text-align: right;"
@@ -373,7 +373,6 @@ class _Tailwind {
         if (custom) return `color: ${custom};`
         if (variable) return `color: ${variable};`
         if (size) return `font-size: ${size * 2 + 10}px; line-height: ${size < 5 ? 0.25 * size + 0.75 : 0.17 * size + 0.75}rem;`
-
         console.log(`Unhandled style for text property "${style}"`)
     }
     _tailwind_w (style) {
@@ -634,14 +633,8 @@ class _Tailwind {
     _tailwind_uppercase (style) {
         return "text-transform: uppercase;"
     }
-    _tailwind_select (style) {
-        if (style == "none") return "user-select: none;"
-        if (style == "auto") return "user-select: auto;"
-        if (style == "text") return "user-select: text;"
-        if (style == "all")  return "user-select: all;"
-
-        console.error("MTailwind [select] could not find style " + style);
-        return "user-select: auto"
+    _tailwind_select(style){
+        return `pointer-events:${style};`
     }
 }
 

@@ -355,6 +355,9 @@ textarea{
     border: none !important;
     outline: none !important;
     resize:none;
+    line-height: 150%;
+    overflow: hidden;
+    min-height: 50px;
 }
 
 input::-webkit-outer-spin-button,
