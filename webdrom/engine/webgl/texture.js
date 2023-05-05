@@ -19,7 +19,8 @@ class Texture {
                         new Uint8Array([0, 0, 100, 255])); // default color
 
         this.image.onload = () => this.create();
-        this.image.src    = "/api/fs/read/" + url;
+        if (url)
+            this.image.src = "/api/fs/read/" + url;
     }
 
     create () {
@@ -51,5 +52,59 @@ class Texture {
     }
     use_in_uniform (shader, buffer) {
         this.activate(buffer.location, shader.textureAllocated ++);
+    }
+}
+
+class AtlasTexture extends Texture {
+    constructor (web_gl, url) {
+        super(web_gl, undefined);
+
+        this.atlas = [];
+
+        let resolve; let reject;
+        let promise = new Promise((rs, rj) => {
+            resolve = rs;
+            reject  = rj;
+        })
+
+        fetch("/api/fs/read/" + url).then((blob) => blob.text().then((text) => {
+            let lines = text.split("\n");
+            this.image.src = "/api/fs/read/" + lines[0];
+
+            for (let lI = 1; lI < lines.length; lI ++) {
+                let [ w, h, x, y, cx, cy ] = lines[lI].split(" ").map((x) => (+x))
+                
+                for (let dx = 0; dx < cx; dx ++)
+                    for (let dy = 0; dy < cy; dy ++)
+                        this.atlas.push( [ x + dx * w, y + dy * h, w, h ] );
+            }
+
+            resolve();
+        }))
+
+        this.promise = promise;
+    }
+
+    async coordinates (index) {
+        await this.promise;
+        
+        let [x, y, w, h] = this.atlas[index];
+
+        x += 0.01
+        y += 0.01
+        w -= 0.02
+        h -= 0.02
+
+        let x0 = x;
+        let y0 = y;
+        let x1 = x + w;
+        let y1 = y + h;
+
+        return [
+            [ x0 / this.image.width, y1 / this.image.height ],
+            [ x1 / this.image.width, y1 / this.image.height ],
+            [ x1 / this.image.width, y0 / this.image.height ],
+            [ x0 / this.image.width, y0 / this.image.height ],
+        ]
     }
 }

@@ -15,7 +15,7 @@ class WebGLCanvas extends Component {
             if (!this.keys[event.key]) return ;
             this.keys[event.key] = undefined;
             
-            this.pc.onkeyend(this.camera, event.key);
+            this.pc.onkeyend(this.camera, event.key, this.keys);
         })
         document.addEventListener("keydown", (event) => {
             if (!this.canvas.classList.contains("active")
@@ -23,7 +23,7 @@ class WebGLCanvas extends Component {
             if (this.keys[event.key]) return ;
 
             this.keys[event.key] = true;
-            this.pc.onkeystart(this.camera, event.key);
+            this.pc.onkeystart(this.camera, event.key, this.keys);
         })
         append_drag_listener(new Scalar(1), this.canvas, (dx, dy, ix, iy) => {
             this.pc.ondrag(this.camera, dx, dy);
@@ -90,6 +90,8 @@ class WebGLCanvas extends Component {
         this.cube2.sri.position.acc.y = - 1.5;
 
         this.camera = new Camera();
+
+        let atlas = new AtlasTexture(this.web_gl, "atlas.atl");
 
         this.pc = new AttachedPlayerController(
             new PlanePlayerController(),

@@ -12,15 +12,15 @@ class AttachedPlayerController extends PlayerController {
 
         this.controller.ondrag(camera, dx, dy);
     }
-    onkeystart (camera, key) {
+    onkeystart (camera, key, keys_status) {
         camera.sri = this.mesh.sri;
 
-        this.controller.onkeystart(camera, key);
+        this.controller.onkeystart(camera, key, keys_status);
     }
-    onkeyend (camera, key) {
+    onkeyend (camera, key, keys_status) {
         camera.sri = this.mesh.sri;
 
-        this.controller.onkeyend(camera, key);
+        this.controller.onkeyend(camera, key, keys_status);
     }
     ontick (camera, delta_t) {
         camera.sri = this.mesh.sri;
