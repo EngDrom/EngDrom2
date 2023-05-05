@@ -51,8 +51,8 @@ class Transform {
         if (this._has_cache()) return this.__matrix;
         return this._matrix();
     }
-    as_sri () {
-        let sri = new SRI();
+    as_sri (world, box) {
+        let sri = world ? new ColliderSRI(world, ...box) : new SRI();
         sri.position.pos.x = this.__x;
         sri.position.pos.y = this.__y;
         sri.position.pos.z = this.__z;

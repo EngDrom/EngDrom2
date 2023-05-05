@@ -16,6 +16,7 @@ class SRI_Density {
     constructor (dp = [ 0, 0, 0 ]) {
         this.acc = new SRI_Vector();
         this.spe = new SRI_Vector();
+        this.ssp = new SRI_Vector(); // static speed
         this.pos = new SRI_Vector();
         
         this.pos.x = dp[0];
@@ -31,12 +32,14 @@ class SRI_Density {
         if (z === undefined) z = this.dp[2]
         
         this.pos = new SRI_Vector(x, y, z);
-        this.acc = new SRI_Vector(sx, sy, sz);
-        this.spe = new SRI_Vector(ax, ay, az);
+        this.spe = new SRI_Vector(0, 0, 0);
+        this.ssp = new SRI_Vector(sx, sy, sz);
+        this.acc = new SRI_Vector(ax, ay, az);
     }
     integrate (delta_t) {
         this.acc.integrate(this.spe, delta_t);
         this.spe.integrate(this.pos, delta_t);
+        this.ssp.integrate(this.pos, delta_t);
     }
 }
 

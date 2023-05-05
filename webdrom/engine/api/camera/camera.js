@@ -23,9 +23,9 @@ class Camera {
         this.sri.position.acc.z += dz;
     }
     velocity (dx, dy, dz) {
-        this.sri.position.spe.x += dx;
-        this.sri.position.spe.y += dy;
-        this.sri.position.spe.z += dz;
+        this.sri.position.ssp.x += dx;
+        this.sri.position.ssp.y += dy;
+        this.sri.position.ssp.z += dz;
     }
 }
 

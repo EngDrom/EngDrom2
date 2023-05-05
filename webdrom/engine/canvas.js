@@ -69,7 +69,7 @@ class WebGLCanvas extends Component {
         this.shader.addTarget("aVertexPosition", 0);
         this.shader.addTarget("aVertexColor", 1);
 
-        const mu_z = -12;
+        const mu_z = -4;
 
         this.mesh = new Mesh(
             this.web_gl,
@@ -81,7 +81,12 @@ class WebGLCanvas extends Component {
         )
         this.cube1 = new MeshInstance(this.web_gl, this.mesh, new Transform(0, 0, 0, 0, 0, 0, 2, 1, 1))
         this.cube2 = new MeshInstance(this.web_gl, this.mesh, new Transform(0, 0, 0, 0, 0, 0, 1, 2, 1))
-        
+        this.world = new RiceWorld();
+        this.world.append( new PRectBox(-100, - 3, -100, 1000, 1, 1000) )
+        this.cube2.use_collisions(this.world);
+        this.cube2.reset();
+        this.cube2.sri.position.acc.y = - 1.5;
+
         this.camera = new Camera();
 
         this.pc = new AttachedPlayerController(

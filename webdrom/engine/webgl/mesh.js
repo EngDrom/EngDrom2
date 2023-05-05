@@ -27,6 +27,20 @@ class Mesh {
     constructor (context, vao_data, ebo_data) {
         this.context = context;
         this.vao     = new VAO(context, vao_data)
+
+        let pos_vbo = vao_data[0];
+        let box     = [ 1e18, 1e18, 1e18, -1e18, -1e18, -1e18 ];
+        for (let pos of pos_vbo) {
+            box[0] = Math.min(box[0], pos[0]);
+            box[1] = Math.min(box[1], pos[1]);
+            box[2] = Math.min(box[2], pos[2]);
+            box[3] = Math.max(box[3], pos[0]);
+            box[4] = Math.max(box[4], pos[1]);
+            box[5] = Math.max(box[5], pos[2]);
+        }
+
+        this.box = box;
+
         this.ebo     = new EBO(context, ebo_data)
     }
 
@@ -56,7 +70,10 @@ class MeshInstance {
         this.reset();
     }
     reset () {
-        this.sri = this.transform.as_sri();
+        this.sri = this.transform.as_sri(this.world, this.mesh.box);
+    }
+    use_collisions (world) {
+        this.world = world;
     }
 
     render (shader, camera) {
