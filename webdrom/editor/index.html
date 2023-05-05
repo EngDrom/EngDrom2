@@ -1,0 +1,100 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Drom</title>
+
+    <link rel="stylesheet" href="/webdrom/editor/index.css">
+
+    <!-- Molyb -->
+    <!--<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined"
+      rel="stylesheet">-->
+
+    <script defer src="/webdrom/assets/gl-matrix.js"></script>
+
+    <script defer src="/webdrom/molyb/src/framework.js"></script>
+    <script defer src="/webdrom/molyb/src/tailwind.js"></script>
+    <script defer src="/webdrom/molyb/molybui/splitter.js"></script>
+    <script defer src="/webdrom/molyb/molybui/tree.js"></script>
+    <script defer src="/webdrom/molyb/molybui/explorer.js"></script>
+    <script defer src="/webdrom/molyb/molybui/prompt.js"></script>
+    <script defer src="/webdrom/molyb/molybui/layout.js"></script>
+
+    <script defer src="/webdrom/editor/index.js"></script>
+
+    <script defer src="/webdrom/editor/io/project/input.js"></script>
+
+    <script defer src="/webdrom/editor/ui/alert.js"></script>
+    <script defer src="/webdrom/editor/ui/active.js"></script>
+    <script defer src="/webdrom/editor/ui/import.js"></script>
+    <script defer src="/webdrom/editor/ui/navbar.js"></script>
+    <script defer src="/webdrom/editor/ui/input.js"></script>
+    <script defer src="/webdrom/editor/ui/contextmenu.js"></script>
+
+    <script defer src="/webdrom/editor/graph/library.js"></script>
+    <script defer src="/webdrom/editor/graph/editor.js"></script>
+    <script defer src="/webdrom/editor/graph/graph.js"></script>
+    <script defer src="/webdrom/editor/graph/line.js"></script>
+    <script defer src="/webdrom/editor/graph/properties.js"></script>
+    <script defer src="/webdrom/editor/graph/validation.js"></script>
+    <script defer src="/webdrom/editor/graph/compilation.js"></script>
+
+    <script defer src="/webdrom/editor/graph/libraries/material/material.js"></script>
+    <script defer src="/webdrom/editor/graph/libraries/material/validation.js"></script>
+    <script defer src="/webdrom/editor/graph/libraries/material/compilation.js"></script>
+
+    <script defer src="/webdrom/editor/text/onglet.js"></script>
+    <script defer src="/webdrom/editor/text/filetree.js"></script>
+
+    <script defer src="/webdrom/editor/engine/transform-modifier.js"></script>
+
+    <script defer src="/webdrom/assets/ejs.js"></script>
+    <script defer src="/webdrom/dromadaire/dromadaire.js"></script>
+
+    <script defer src="/webdrom/engine/canvas.js"></script>
+    <script defer src="/webdrom/engine/engine.js"></script>
+
+    <script defer src="/webdrom/engine/webgl/context.js"></script>
+    <script defer src="/webdrom/engine/webgl/shader.js"></script>
+    <script defer src="/webdrom/engine/webgl/buffer.js"></script>
+    <script defer src="/webdrom/engine/webgl/mesh.js"></script>
+    <script defer src="/webdrom/engine/webgl/raytracer.js"></script>
+    <script defer src="/webdrom/engine/webgl/transform.js"></script>
+    <script defer src="/webdrom/engine/webgl/texture.js"></script>
+
+    <script defer src="/webdrom/engine/api/camera/camera.js"></script>
+    <script defer src="/webdrom/engine/api/inertial/sri.js"></script>
+    <script defer src="/webdrom/engine/api/inertial/collider.js"></script>
+    <script defer src="/webdrom/engine/api/controller/api.js"></script>
+    <script defer src="/webdrom/engine/api/controller/2d.js"></script>
+    <script defer src="/webdrom/engine/api/controller/attached.js"></script>
+
+    <script defer src="/webdrom/rice/rice.js"></script>
+
+    <style id="tailwind-css">
+      
+
+  </style>
+</head>
+<body class="webdrom main editor">
+    <script defer>
+        document.addEventListener("DOMContentLoaded", () => {
+            pr = new Project(document.body); 
+            cl = console.log; 
+            nv = new Navbar(pr, [ { "type": "menu", "text": "Server", "childs": [
+                { "type": "action", "action": cl, "text": "Open" },
+                { "type": "separator" },
+                { "type": "menu", "text": "Open recent", "childs": [
+                    { "type": "action", "action": cl, "text": "Nothing recent" }
+                ] }
+            ] }, { "type": "menu", "text": "Edit", "childs": [
+                { "type": "action", "action": cl, "text": "Zoom In", 'shortcut': "Ctrl+61" },
+                { "type": "action", "action": cl, "text": "Zoom Out", 'shortcut': "Ctrl+-" },
+            ] } ])
+        })
+    </script>
+</body>
+</html>
