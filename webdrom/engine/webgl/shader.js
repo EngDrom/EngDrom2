@@ -38,6 +38,8 @@ class ShaderProgram {
 
         this.context = context;
 
+        this.textureAllocated = 0;
+
         this.__gl_id = -1;
 
         let t_v = this.init();
@@ -69,6 +71,8 @@ class ShaderProgram {
                         val.use_in_uniform(this, buffer_data);
                     } else if (val instanceof Transform) {
                         val.use_in_uniform(this, buffer_data);
+                    } else if (val instanceof Texture) {
+                        val.use_in_uniform(this, buffer_data); 
                     } else throw 'Could not recognize val type';
                     
                     return true;
@@ -80,6 +84,9 @@ class ShaderProgram {
         })
     }
 
+    prerender () {
+        this.textureAllocated = 0;
+    }
     use () {
         this.context.useProgram(this.__gl_id);
     }

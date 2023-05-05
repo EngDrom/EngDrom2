@@ -52,22 +52,24 @@ class WebGLCanvas extends Component {
         this.web_gl = new ExtendedWebGLContext(this.canvas.getContext("webgl"))
         this.make_projection();
         this.shader = this.web_gl.loadProgram(`attribute vec3 aVertexPosition;
-        attribute vec3 aVertexColor;
+        attribute vec2 aTextCoord;
         uniform mat4 mModel;
         uniform mat4 mProj;
         uniform mat4 mCamera;
-        varying lowp vec4 vColor;
+        varying lowp vec2 textCoord;
         
         void main(void) {
           gl_Position = mProj * mCamera * mModel * vec4(aVertexPosition, 1.0);
-          vColor = vec4(aVertexColor, 1.0);
-        }`, `varying lowp vec4 vColor;
+          textCoord = aTextCoord;
+        }`, `varying lowp vec2 textCoord;
+        uniform sampler2D text;
+        uniform sampler2D text2;
         
         void main(void) {
-            gl_FragColor = vColor;
+            gl_FragColor = texture2D(text, textCoord) * texture2D(text2, textCoord);
           }`);
         this.shader.addTarget("aVertexPosition", 0);
-        this.shader.addTarget("aVertexColor", 1);
+        this.shader.addTarget("aTextCoord", 1);
 
         const mu_z = -4;
 
@@ -75,7 +77,7 @@ class WebGLCanvas extends Component {
             this.web_gl,
             [
                 [ [0.5, 0.5, mu_z], [-0.5, 0.5, mu_z], [0.5, -0.5, mu_z], [-0.5, -0.5, mu_z] ],
-                [ [1, 0, 0], [0, 1, 0], [0, 0, 1], [0.5, 0.5, 0] ]
+                [ [1, 0], [0, 0], [1, 1], [0, 1] ]
             ],
             [ 0, 1, 2, 1, 2, 3 ]
         )

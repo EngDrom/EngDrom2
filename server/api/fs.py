@@ -9,7 +9,7 @@ class FileSystemGetApi(API):
         return path.startswith("/api/fs/read/")
 
     def handle_api (self, path):
-        return API.get_file_data( path[12:], self.folder )
+        return API.get_file_data( path[13:], self.folder )
 
 class FileSystemApi(API):
     def valid(self, path):

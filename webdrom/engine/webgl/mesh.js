@@ -65,6 +65,8 @@ class MeshInstance {
         this.context = context;
         this.mesh    = mesh;
 
+        this.textures = { text: new Texture(context, "preview.png"), text2: new Texture(context, "characters.png") };
+
         this.transform = transform;
         this.sri       = undefined;
         this.reset();
@@ -78,9 +80,13 @@ class MeshInstance {
 
     render (shader, camera) {
         shader.use();
+        shader.prerender();
         shader.mModel  = this.sri.as_transform();
         shader.mProj   = this.context.projection;
         shader.mCamera = camera.transform();
+
+        for (let texture_loc in this.textures)
+            shader[texture_loc] = this.textures[texture_loc];
 
         this.mesh.render(shader);
     }
@@ -88,6 +94,7 @@ class MeshInstance {
         create_raytracer_shader(this.context);
 
         this.context.raytracer.use();
+        this.context.raytracer.prerender();
         this.context.raytracer.mModel  = this.sri.as_transform();
         this.context.raytracer.mProj   = this.context.projection;
         this.context.raytracer.mCamera = camera.transform();
