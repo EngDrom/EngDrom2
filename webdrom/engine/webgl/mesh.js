@@ -52,11 +52,16 @@ class MeshInstance {
         this.mesh    = mesh;
 
         this.transform = transform;
+        this.sri       = undefined;
+        this.reset();
+    }
+    reset () {
+        this.sri = this.transform.as_sri();
     }
 
     render (shader, camera) {
         shader.use();
-        shader.mModel  = this.transform;
+        shader.mModel  = this.sri.as_transform();
         shader.mProj   = this.context.projection;
         shader.mCamera = camera.transform();
 
@@ -66,7 +71,7 @@ class MeshInstance {
         create_raytracer_shader(this.context);
 
         this.context.raytracer.use();
-        this.context.raytracer.mModel  = this.transform;
+        this.context.raytracer.mModel  = this.sri.as_transform();
         this.context.raytracer.mProj   = this.context.projection;
         this.context.raytracer.mCamera = camera.transform();
 

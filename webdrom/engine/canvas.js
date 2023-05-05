@@ -7,19 +7,6 @@ class WebGLCanvas extends Component {
         this.engine = engine;
     }
 
-    startkeypress (key) {
-        if (key == "ArrowRight") this.camera.velocity( 1, 0, 0);
-        if (key == "ArrowLeft")  this.camera.velocity(-1, 0, 0);
-        if (key == "ArrowUp")    this.camera.velocity( 0, 1, 0);
-        if (key == "ArrowDown")  this.camera.velocity( 0,-1, 0);
-    }
-    endkeypress (key) {
-        if (key == "ArrowRight") this.camera.velocity(-1, 0, 0);
-        if (key == "ArrowLeft")  this.camera.velocity( 1, 0, 0);
-        if (key == "ArrowUp")    this.camera.velocity( 0,-1, 0);
-        if (key == "ArrowDown")  this.camera.velocity( 0, 1, 0);
-    }
-
     _first_render () {
         this.canvas = createElement("canvas", { onclick: (ev) => this.onClick(ev) }, "w-full h-full", []);
         this.keys   = {}
@@ -28,7 +15,7 @@ class WebGLCanvas extends Component {
             if (!this.keys[event.key]) return ;
             this.keys[event.key] = undefined;
             
-            this.endkeypress(event.key);
+            this.pc.onkeyend(this.camera, event.key);
         })
         document.addEventListener("keydown", (event) => {
             if (!this.canvas.classList.contains("active")
@@ -36,9 +23,12 @@ class WebGLCanvas extends Component {
             if (this.keys[event.key]) return ;
 
             this.keys[event.key] = true;
-            this.startkeypress(event.key);
+            this.pc.onkeystart(this.camera, event.key);
         })
-        
+        append_drag_listener(new Scalar(1), this.canvas, (dx, dy, ix, iy) => {
+            this.pc.ondrag(this.camera, dx, dy);
+        })
+
         this.component = createElement("div", {}, "w-full", [
             createElement("div", {}, "w-full h-full overflow-none", [
                 this.canvas
@@ -93,6 +83,11 @@ class WebGLCanvas extends Component {
         this.cube2 = new MeshInstance(this.web_gl, this.mesh, new Transform(0, 0, 0, 0, 0, 0, 1, 2, 1))
         
         this.camera = new Camera();
+
+        this.pc = new AttachedPlayerController(
+            new PlanePlayerController(),
+            this.cube2
+        );
     }
     clear () {
         this.web_gl.clearColor(0.0, 0.0, 0.0, 1.0)
@@ -104,7 +99,7 @@ class WebGLCanvas extends Component {
     drawCallback (delta_interval) {
         this._runComputations();
 
-        this.camera.integrate(delta_interval / 1000.0);
+        this.pc.ontick(this.camera, delta_interval / 1000.0)
 
         this.clear();
         this.cube1.render(this.shader, this.camera);

@@ -6,7 +6,9 @@ class TransformEditorComponent extends Component {
         this._first_render();
     }
 
-    setTarget (target) {
+    setTarget (mesh) {
+        this.mesh   = mesh;
+        let target  = mesh?.transform;
         this.target = target;
         
         this.pos.setValue(target?.__x,  target?.__y,  target?.__z);
@@ -22,6 +24,7 @@ class TransformEditorComponent extends Component {
             this.target.__y = y;
             this.target.__z = z;
             this.target.__matrix = undefined;
+            this.mesh.reset();
         })
         this.rot = new Vec3Input(this, (x, y, z) => {
             if (this.target === undefined) return ;
@@ -30,6 +33,7 @@ class TransformEditorComponent extends Component {
             this.target.__ry = y;
             this.target.__rz = z;
             this.target.__matrix = undefined;
+            this.mesh.reset();
         })
         this.sca = new Vec3Input(this, (x, y, z) => {
             if (this.target === undefined) return ;
@@ -38,6 +42,7 @@ class TransformEditorComponent extends Component {
             this.target.__sy = y;
             this.target.__sz = z;
             this.target.__matrix = undefined;
+            this.mesh.reset();
         })
 
         this.element = createElement("div", {}, "px-4", [

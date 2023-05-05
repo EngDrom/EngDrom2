@@ -37,11 +37,11 @@ class Transform {
 
         let matrix = glMatrix.mat4.create();
         glMatrix.mat4.translate(matrix, matrix, [ this.__x,  this.__y,  this.__z  ]);
-        glMatrix.mat4.scale    (matrix, matrix, [ this.__sx, this.__sy, this.__sz ]);
-
         glMatrix.mat4.rotateX  (matrix, matrix, this.__rx / 180.0 * Math.PI);
         glMatrix.mat4.rotateY  (matrix, matrix, this.__ry / 180.0 * Math.PI);
         glMatrix.mat4.rotateZ  (matrix, matrix, this.__rz / 180.0 * Math.PI);
+
+        glMatrix.mat4.scale    (matrix, matrix, [ this.__sx, this.__sy, this.__sz ]);
 
         this.__matrix = matrix;
 
@@ -50,6 +50,20 @@ class Transform {
     matrix () {
         if (this._has_cache()) return this.__matrix;
         return this._matrix();
+    }
+    as_sri () {
+        let sri = new SRI();
+        sri.position.pos.x = this.__x;
+        sri.position.pos.y = this.__y;
+        sri.position.pos.z = this.__z;
+        sri.rotation.pos.x = this.__rx;
+        sri.rotation.pos.y = this.__ry;
+        sri.rotation.pos.z = this.__rz;
+        sri.scale   .pos.x = this.__sx;
+        sri.scale   .pos.y = this.__sy;
+        sri.scale   .pos.z = this.__sz;
+
+        return sri;
     }
 
     use_in_uniform (shader, buffer) {

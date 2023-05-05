@@ -58,4 +58,13 @@ class SRI {
             scale   : [ this.scale   .pos.x, this.scale   .pos.y, this.scale   .pos.z ]
         }
     }
+    as_transform () {
+        let comp = this.get_components();
+
+        return new Transform(
+            comp.position[0], comp.position[1], comp.position[2],
+            comp.rotation[0], comp.rotation[1], comp.rotation[2],
+            comp.scale   [0], comp.scale   [1], comp.scale   [2],
+        )
+    }
 };

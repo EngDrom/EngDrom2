@@ -38,7 +38,7 @@ class HomeProjectPage extends ProjectPage {
     _first_render () {
         let transform_editor = new TransformEditorComponent(this);
         document.addEventListener("WebDrom.MeshInstance.Clicked", (event) => {
-            transform_editor.setTarget(event.meshInstance?.transform);
+            transform_editor.setTarget(event.meshInstance);
         });
 
         let tree = new MExplorer (this, { "text": "Explorer", "components": [

@@ -11,7 +11,7 @@ class Camera {
         let [rx, ry, rz] = comp.rotation;
         let [sx, sy, sz] = comp.scale;
 
-        return new Transform(- x, - y, z, - rx, - ry, rz, sx, sy, sz);
+        return new Transform(- x, - y, z, - rx, - ry, rz, 1, 1, 1);
     }
     integrate (delta_t) {
         this.sri.integrate(delta_t);
