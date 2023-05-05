@@ -38,13 +38,29 @@ class HomeProjectPage extends ProjectPage {
     }
 
     _first_render () {
-        let tree     = new MExplorer (this, { "text": "Explorer", "components": [
-            { "text": "Webdrom", "component": (parent) => new FileTree(parent).render(), "icons": []  },
+        let transform_editor = new TransformEditorComponent(this);
+        document.addEventListener("WebDrom.MeshInstance.Clicked", (event) => {
+            transform_editor.setTarget(event.meshInstance?.transform);
+        });
+
+        let tree = new MExplorer (this, { "text": "Explorer", "components": [
+            { "text": "Project", "component": (parent) => new FileTree(parent).render(), "icons": []  },
             { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  },
-            { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  }
+            { "text": "Level", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  }
         ] });
+        let property_tree = new MExplorer(this, {
+            "text": "Properties",
+            "components": [
+                { "text": "Transform", "component": (parent) => transform_editor.render() },
+                { "text": "Material", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render() },
+            ]
+        }, false)
         let config   = undefined
         
+        let splitter1 = new MSplitter(this, "vertical", undefined, true, 
+            this.engine.render(),
+            createElement("div", {}, "", [])
+        )
         let tabs = createElement("div", {}, "h-8 w-full flex",[
             new Onglet().render(),
             new Onglet().render()
@@ -102,11 +118,35 @@ class HomeProjectPage extends ProjectPage {
             createElement("div", {}, "w-full h-full bg-Vwebdrom-light-background", [
                 tree.render()
             ]),
-            onglets
+            splitter1.render(),
+            createElement("div", {}, "w-full h-full bg-Vwebdrom-light-background", [
+                property_tree.render()
+            ])
         )
-        splitter.sizes = [ 400, 0 ];
-        this.element = createElement("div", {}, "h-full", [
-            splitter.render()
+
+        const left_onglet = 60;
+        let splitter_viewport = new ViewportComponent(
+            this, splitter, left_onglet, 21
+        )
+        splitter.sizes     = [ 300, 800, 300 ];
+        splitter1.sizes    = [ 300, 300 ];
+        splitter.min_sizes = [ 200, 400, 200 ];
+        splitter.collapse  = [ true, false, true ];
+        splitter1.collapse = [ false, false ];
+        this.element = createElement("div", {}, "h-full flex", [
+            createElement("div", {}, `w-[${left_onglet}px]`, [
+                createElement("div", [], "cursor-pointer p-[14px] h-15 relative", [
+                    createElement("div", [], "absolute left-0 top-0 w-[2px] bg-Vwebdrom-editor-text h-full"),
+                    createIcon("desktop_windows", "icon-32")
+                ]),
+                createElement("div", [], "cursor-pointer p-[14px] h-15", [
+                    createIcon("content_copy", "icon-32")
+                ]),
+                createElement("div", [], "cursor-pointer p-[14px] h-15", [
+                    createIcon("schema", "icon-32")
+                ])
+            ]),
+            splitter_viewport.render()
         ])
     }
 
