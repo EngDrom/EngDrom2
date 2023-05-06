@@ -98,7 +98,6 @@ class ShaderProgram {
             let target = this.vbo_targets[name];
 
             this[name] = vao.vbos[target];
-            this.context.enableVert
         }
 
         this.use();

@@ -40,7 +40,9 @@ class Texture {
             this.web_gl.texParameteri(this.web_gl.TEXTURE_2D, 
                 this.web_gl.TEXTURE_WRAP_T, this.web_gl.CLAMP_TO_EDGE);
             this.web_gl.texParameteri(this.web_gl.TEXTURE_2D, 
-                this.web_gl.TEXTURE_MIN_FILTER, this.web_gl.LINEAR);
+                this.web_gl.TEXTURE_MIN_FILTER, this.web_gl.NEAREST);
+            this.web_gl.texParameteri(this.web_gl.TEXTURE_2D, 
+                this.web_gl.TEXTURE_MAG_FILTER, this.web_gl.NEAREST);
         }
     }
 
@@ -61,10 +63,9 @@ class AtlasTexture extends Texture {
 
         this.atlas = [];
 
-        let resolve; let reject;
         let promise = new Promise((rs, rj) => {
-            resolve = rs;
-            reject  = rj;
+            this.resolve = rs;
+            this.reject  = rj;
         })
 
         fetch("/api/fs/read/" + url).then((blob) => blob.text().then((text) => {
@@ -78,22 +79,26 @@ class AtlasTexture extends Texture {
                     for (let dy = 0; dy < cy; dy ++)
                         this.atlas.push( [ x + dx * w, y + dy * h, w, h ] );
             }
-
-            resolve();
         }))
 
         this.promise = promise;
     }
 
-    async coordinates (index) {
+    create () {
+        super.create();
+        this.resolve()
+    }
+
+    async wait () {
         await this.promise;
-        
+    }
+    coordinates (index) {
         let [x, y, w, h] = this.atlas[index];
 
-        x += 0.01
-        y += 0.01
-        w -= 0.02
-        h -= 0.02
+        x += 0.1
+        y += 0.1
+        w -= 0.2
+        h -= 0.2
 
         let x0 = x;
         let y0 = y;

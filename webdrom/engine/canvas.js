@@ -51,6 +51,26 @@ class WebGLCanvas extends Component {
     make_gl () {
         this.web_gl = new ExtendedWebGLContext(this.canvas.getContext("webgl"))
         this.make_projection();
+
+        this.web_gl.default_shader = this.web_gl.loadProgram(`attribute vec3 aVertexPosition;
+        attribute vec2 aTextCoord;
+        uniform mat4 mModel;
+        uniform mat4 mProj;
+        uniform mat4 mCamera;
+        varying lowp vec2 textCoord;
+        
+        void main(void) {
+          gl_Position = mProj * mCamera * mModel * vec4(aVertexPosition, 1.0);
+          textCoord = aTextCoord;
+        }`, `varying lowp vec2 textCoord;
+        uniform sampler2D uTexture;
+        
+        void main(void) {
+            gl_FragColor = texture2D(uTexture, textCoord);
+            if (gl_FragColor.w <= 0.1) discard;
+          }`);
+        this.web_gl.default_shader.addTarget("aVertexPosition", 0);
+        this.web_gl.default_shader.addTarget("aTextCoord", 1);
         this.shader = this.web_gl.loadProgram(`attribute vec3 aVertexPosition;
         attribute vec2 aTextCoord;
         uniform mat4 mModel;
@@ -89,14 +109,11 @@ class WebGLCanvas extends Component {
         this.cube2.reset();
         this.cube2.sri.position.acc.y = - 1.5;
 
+        this.grid = new GridMesh( this.web_gl, new Transform(0, -5, -20, 0, 0, 0, 1, 1, 1), "index.grid" );
+
         this.camera = new Camera();
 
-        let atlas = new AtlasTexture(this.web_gl, "atlas.atl");
-
-        this.pc = new AttachedPlayerController(
-            new PlanePlayerController(),
-            this.cube2
-        );
+        this.pc = new PlanePlayerController()
     }
     clear () {
         this.web_gl.clearColor(0.0, 0.0, 0.0, 1.0)
@@ -111,8 +128,7 @@ class WebGLCanvas extends Component {
         this.pc.ontick(this.camera, delta_interval / 1000.0)
 
         this.clear();
-        this.cube1.render(this.shader, this.camera);
-        this.cube2.render(this.shader, this.camera);
+        this.grid .render(this.web_gl.default_shader, this.camera);
     }
 
     _runComputations () {
