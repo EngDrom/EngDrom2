@@ -91,22 +91,20 @@ class WebGLCanvas extends Component {
         this.shader.addTarget("aVertexPosition", 0);
         this.shader.addTarget("aTextCoord", 1);
 
-        const mu_z = -7;
-
         this.mesh = new SavedMesh(this.web_gl, "index.mesh");
+
         this.cube1 = new MeshInstance(this.web_gl, this.mesh, new Transform(8, 7, -7, 0, 0, 0, 0.5, 0.5, 1))
-        this.world = new RiceWorld();
-        this.world.append( new PRectBox(-100, - 3, -100, 1000, 1, 1000) )
-        this.cube1.use_collisions(this.world);
+        
+        this.level = new Level(this.web_gl, "index.level");
+
+        this.cube1.use_collisions(this.level.world);
         this.cube1.reset();
         this.cube1.sri.position.acc.y = - 5;
-
-        this.grid = new GridMesh( this.web_gl, new Transform(0, 0, -7, 0, 0, 0, 1, 1, 1), "index.grid" );
-        this.world.append( new Grid_HitBox(this.grid) );
+        this.cube1.sri.position.ssp.y = 3.5;
 
         this.camera = new Camera();
 
-        this.pc = new PlanePlayerController();
+        this.pc = new PlanePlayerController( 4, 4 );
     }
     clear () {
         this.web_gl.clearColor(0.0, 0.0, 0.0, 1.0)
@@ -118,10 +116,13 @@ class WebGLCanvas extends Component {
     drawCallback (delta_interval) {
         this._runComputations();
 
-        this.pc.ontick(this.camera, delta_interval / 1000.0)
+        this.pc.ontick(this.camera, delta_interval)
+
+        if (this.cube1.mesh.box)
+            this.cube1.sri.integrate(delta_interval);
 
         this.clear();
-        this.grid .render(this.web_gl.default_shader, this.camera);
+        this.level.render(this.web_gl.default_shader, this.camera);
         this.cube1.render(this.shader, this.camera);
     }
 

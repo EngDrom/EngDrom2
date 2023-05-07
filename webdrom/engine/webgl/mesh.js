@@ -80,6 +80,8 @@ class MeshInstance {
     }
     reset () {
         if (this.mesh instanceof SavedMesh) {
+            if (this.sri_await) return ;
+
             this.sri = this.transform.as_sri(undefined, undefined);
             this.sri_await = true;
             this.mesh.await( () => this._reset() );

@@ -3,8 +3,16 @@ function isPowerOf2(value) {
     return (value & (value - 1)) == 0;
 }
 
+const TEXTURE_ARRAYS = {};
+
 class Texture {
     constructor (web_gl, url) {
+        if (!TEXTURE_ARRAYS[this.constructor])
+            TEXTURE_ARRAYS[this.constructor] = {};
+        if (TEXTURE_ARRAYS[this.constructor][url])
+            return TEXTURE_ARRAYS[this.constructor][url];
+        TEXTURE_ARRAYS[this.constructor][url] = this;
+
         this.web_gl = web_gl;
         this.image   = new Image();
 

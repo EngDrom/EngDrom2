@@ -1,13 +1,33 @@
-version: 0
-mesh: 
-    index.mesh x
-    index.grid
-material: 
-    index.mat
-    color.mat
-instances:
-    (0) (8, 7, 0) (0, 0, 0) (1000, 1000, 1) (1)
-    (1) (0, 0, -10) (0, 0, 0) (1, 1, 1) (0)
-    (0) (8, 7, 0) (0, 0, 0) (1, 1, 1) (0, atlas:characters.atl:1, anim:characters.anim)
-script:
-    index.dmd
+{
+    "scripts": "index.dmd",
+    "gravity_strength": 5,
+    "instances": [
+        {
+            "type": "mesh",
+            "name": "Background", 
+            "position": { "x": 0, "y": 0, "z" : 0 }, 
+            "rotation": { "x": 0, "y": 0, "z" : 0 }, 
+            "scale"   : { "x": 1, "y": 1, "z" : 1 },
+            "mesh"    : "index.mesh",
+            "material": "index.mat",
+
+            "properties": {},
+            "textures"  : {}
+        },
+        {
+            "type": "grid",
+            "pos_z": -7,
+            "name": "Level grid",
+            "target": "index.grid"
+        },
+        {
+            "type": "characters.atl",
+            "name": "Character",
+            "use_gravity": true,
+            "position": { "x": 0, "y": 0, "z" : 0 },
+            "rotation": { "x": 0, "y": 0, "z" : 0 }, 
+            "scale"   : { "x": 1, "y": 1, "z" : 1 },
+            "coordinates": 1
+        }
+    ]
+}

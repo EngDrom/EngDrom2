@@ -20,8 +20,6 @@ class GridChunk_HitBox extends HitBox {
                 this.boxes.push( new PRectBox(this.dx + px, this.dy + py, -Infinity, 1, 1, Infinity) );
             }
         }
-
-        console.log(this.boxes)
     }
 }
 

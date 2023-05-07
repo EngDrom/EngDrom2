@@ -22,8 +22,6 @@ class VAO {
         this.offset = 0;
         this.shape  = [];
         shape(this.shape, tensor_array);
-        console.log(tensor_array)
-        console.log(this.shape)
         if (this.shape.length != 3) throw 'VAO tensor should have shape of size 3';
 
         this.vertexCount = this.shape[1];
