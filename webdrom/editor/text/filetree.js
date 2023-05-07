@@ -1,9 +1,10 @@
 
 class FileTree extends Component {
-    constructor (parent) {
+    constructor (parent, click_action) {
         super(parent);
 
         this.element = createElement("div", {}, "", []);
+        this.click_action = click_action;
 
         fetch('/api/fs/tree/').then((body) => body.json().then((json) => {
             this.config = json
@@ -20,12 +21,29 @@ class FileTree extends Component {
         return (a.type < b.type) ? 1 : -1;
     }
 
+    onclick (event, node) {
+        let path = node.config.text;
+        let sn   = node;
+        node = node.parent;
+
+        while (!node.is_tree_root) {
+            path = node.config.text + "/" + path;
+            node = node.parent;
+        }
+
+        if (this.click_action)
+            this.click_action(event, sn, path);
+    }
     traverse_config (cur_conf=undefined) {
         if (cur_conf === undefined) cur_conf = this.config;
 
         cur_conf.text = cur_conf.name;
 
-        if (cur_conf.type != "folder") return ;
+        if (cur_conf.type != "folder") {
+            cur_conf.action = (...h) => this.onclick(...h);
+
+            return ;
+        }
 
         cur_conf.files.sort(this.compare_config)
         for (let file of cur_conf.files)

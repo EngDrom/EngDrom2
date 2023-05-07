@@ -64,6 +64,8 @@ class ColliderSRI extends SRI {
         let a = 0;
         let b = delta_t;
 
+        if (this.try_integration(speed, b, axis)) a = b;
+
         while (b - a > 1e-6) {
             let c = (a + b) / 2.0;
 

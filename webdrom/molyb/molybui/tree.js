@@ -13,6 +13,11 @@ class __MTree_Object extends Component {
         this._first_render();
     }
 
+    onclick (event) {
+        if (this.config.action)
+            this.config.action(event, this);
+        this.toggle_tree();
+    }
     toggle_tree () {
         this.open_status = !this.open_status;
         this.render(false);
@@ -80,7 +85,7 @@ class __MTree_Object extends Component {
         this.bubb_element = createElement("div", {}, "", [])
 
         this.element = createElement("div", {}, "", [
-            createElement("div", { onclick: () => this.toggle_tree() }, 
+            createElement("div", { onclick: () => this.onclick() }, 
                 this._create_div_cls(), [
                 this.icon_element,
                 this.text_element,
@@ -112,7 +117,9 @@ class MTree extends Component {
     constructor (parent, config) {
         super(parent);
 
-        this.config = config
+        this.config = config;
+
+        this.is_tree_root = true;
 
         this._first_render();
     }

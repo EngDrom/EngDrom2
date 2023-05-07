@@ -42,7 +42,11 @@ class HomeProjectPage extends ProjectPage {
         });
 
         let tree = new MExplorer (this, { "text": "Explorer", "components": [
-            { "text": "Project", "component": (parent) => new FileTree(parent).render(), "icons": []  },
+            { "text": "Project", "component": (parent) => {
+                let action = (e, n, p) => {};
+
+                return new FileTree(parent, action).render()
+            }, "icons": []  },
             { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  },
             { "text": "Level", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  }
         ] });

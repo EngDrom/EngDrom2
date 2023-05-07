@@ -51,6 +51,26 @@ class WebGLCanvas extends Component {
     make_gl () {
         this.web_gl = new ExtendedWebGLContext(this.canvas.getContext("webgl"))
         this.make_projection();
+
+        this.web_gl.default_shader = this.web_gl.loadProgram(`attribute vec3 aVertexPosition;
+        attribute vec2 aTextCoord;
+        uniform mat4 mModel;
+        uniform mat4 mProj;
+        uniform mat4 mCamera;
+        varying lowp vec2 textCoord;
+        
+        void main(void) {
+          gl_Position = mProj * mCamera * mModel * vec4(aVertexPosition, 1.0);
+          textCoord = aTextCoord;
+        }`, `varying lowp vec2 textCoord;
+        uniform sampler2D uTexture;
+        
+        void main(void) {
+            gl_FragColor = texture2D(uTexture, textCoord);
+            if (gl_FragColor.w <= 0.1) discard;
+          }`);
+        this.web_gl.default_shader.addTarget("aVertexPosition", 0);
+        this.web_gl.default_shader.addTarget("aTextCoord", 1);
         this.shader = this.web_gl.loadProgram(`attribute vec3 aVertexPosition;
         attribute vec2 aTextCoord;
         uniform mat4 mModel;
@@ -71,7 +91,7 @@ class WebGLCanvas extends Component {
         this.shader.addTarget("aVertexPosition", 0);
         this.shader.addTarget("aTextCoord", 1);
 
-        const mu_z = -4;
+        const mu_z = -7;
 
         this.mesh = new Mesh(
             this.web_gl,
@@ -81,21 +101,21 @@ class WebGLCanvas extends Component {
             ],
             [ 0, 1, 2, 1, 2, 3 ]
         )
-        this.cube1 = new MeshInstance(this.web_gl, this.mesh, new Transform(0, 0, 0, 0, 0, 0, 2, 1, 1))
-        this.cube2 = new MeshInstance(this.web_gl, this.mesh, new Transform(0, 0, 0, 0, 0, 0, 1, 2, 1))
+        this.cube1 = new MeshInstance(this.web_gl, this.mesh, new Transform(8, 7, 0, 0, 0, 0, 1, 1, 1))
         this.world = new RiceWorld();
         this.world.append( new PRectBox(-100, - 3, -100, 1000, 1, 1000) )
-        this.cube2.use_collisions(this.world);
-        this.cube2.reset();
-        this.cube2.sri.position.acc.y = - 1.5;
+        this.cube1.use_collisions(this.world);
+        this.cube1.reset();
+        this.cube1.sri.position.acc.y = - 5;
+
+        this.grid = new GridMesh( this.web_gl, new Transform(0, 0, -7, 0, 0, 0, 1, 1, 1), "index.grid" );
+        this.world.append( new Grid_HitBox(this.grid) );
 
         this.camera = new Camera();
 
-        let atlas = new AtlasTexture(this.web_gl, "atlas.atl");
-
         this.pc = new AttachedPlayerController(
-            new PlanePlayerController(),
-            this.cube2
+            new PlanePlayerController(4, 4, [ 'l', 'r', 'u' ]),
+            this.cube1
         );
     }
     clear () {
@@ -111,8 +131,8 @@ class WebGLCanvas extends Component {
         this.pc.ontick(this.camera, delta_interval / 1000.0)
 
         this.clear();
+        this.grid .render(this.web_gl.default_shader, this.camera);
         this.cube1.render(this.shader, this.camera);
-        this.cube2.render(this.shader, this.camera);
     }
 
     _runComputations () {
@@ -130,7 +150,6 @@ class WebGLCanvas extends Component {
         
         this.clear();
         this.cube1.renderRTS(this.raytracer, this.camera);
-        this.cube2.renderRTS(this.raytracer, this.camera);
 
         return this.getBuffer();
     }

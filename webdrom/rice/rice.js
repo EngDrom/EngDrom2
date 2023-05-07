@@ -35,6 +35,12 @@ class RiceFactoryManager {
             return this.factory[type0][type1];
         if (this.factory[type1] && this.factory[type1][type0])
             return (x, y) => this.factory[type1][type0](y, x);
+        
+        if (this.factory[type0] && this.factory[type0][HitBox])
+            return this.factory[type0][HitBox]
+        if (this.factory[type1] && this.factory[type1][HitBox])
+            return this.factory[type1][HitBox]
+        
         return ;
     }
 }
@@ -64,9 +70,9 @@ class PRectBox extends HitBox {
     }
 
     is_in (x, y, z) {
-        return this.x <= x && x <= this.x + this.sx
-            && this.y <= y && y <= this.y + this.sy
-            && this.z <= z && z <= this.z + this.sz
+        return this.x <= x && (this.sx === Infinity || x <= this.x + this.sx)
+            && this.y <= y && (this.sy === Infinity || y <= this.y + this.sy)
+            && this.z <= z && (this.sz === Infinity || z <= this.z + this.sz)
     }
     points () {
         let points = [];

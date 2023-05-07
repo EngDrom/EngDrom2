@@ -1,11 +1,19 @@
 
 
 class PlanePlayerController extends PlayerController {
+    constructor (sx = 1, sy = 1, options = [ 'l', 'r', 'u', 'd' ]) {
+        super();
+        this.sx = sx;
+        this.sy = sy;
+
+        for (let opt of options)
+            this[opt] = true;
+    }
     append (camera, key) {
-        if (key == "ArrowRight") camera.velocity( 1, 0, 0);
-        if (key == "ArrowLeft")  camera.velocity(-1, 0, 0);
-        if (key == "ArrowUp")    camera.velocity( 0, 1, 0);
-        if (key == "ArrowDown")  camera.velocity( 0,-1, 0);
+        if (this.r && key == "ArrowRight") camera.velocity( this.sx, 0, 0);
+        if (this.l && key == "ArrowLeft")  camera.velocity(-this.sx, 0, 0);
+        if (this.u && key == "ArrowUp")    camera.velocity( 0, this.sy, 0);
+        if (this.d && key == "ArrowDown")  camera.velocity( 0,-this.sy, 0);
     }
     compute (camera, keys_status) {
         camera.sri.position.ssp.x = 0;
