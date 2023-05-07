@@ -5,6 +5,9 @@ class __MTree_Object extends Component {
 
         this.group_cls = Tailwind.createGroup();
         this.config    = config;
+        if (this.config.instance)
+            this.config.instance.tree_node = this;
+
         this.depth     = depth;
         this.visual_depth = depth + 3;
 
@@ -95,6 +98,11 @@ class __MTree_Object extends Component {
             this.child_element
         ])
     }
+    _update () {
+        for (let child of this.childs)
+            child._update();
+        this._render();
+    }
     _render () {
         this.icon_element.replaceChildren();
         this.icon_element.appendChild(this.makeIcon())
@@ -124,13 +132,23 @@ class MTree extends Component {
         this._first_render();
     }
     _first_render () {
+        this.childs = [];
+
         if (this.config instanceof Array) {
             this.elements = this.config.map((_conf) => {
-                return new __MTree_Object( this, _conf, 1 ).render()
+                let el = new __MTree_Object( this, _conf, 1 )
+                this.childs.push(el);
+
+                return el.render();
             })
         } else {
-            this.elements = [ new __MTree_Object( this, this.config, 1 ).render() ];
+            this.childs = [new __MTree_Object( this, this.config, 1 )];
+            this.elements = [ this.childs[0].render() ];
         }
+    }
+    _update () {
+        for (let child of this.childs)
+            child._update();
     }
     _render () {
         return createElement("div", {}, "", [

@@ -108,6 +108,7 @@ class WebGLCanvas extends Component {
         this.raytracer = new RayTracer();
         
         this.clear();
+        this.level.renderRTS(this.raytracer, this.camera);
 
         return this.getBuffer();
     }

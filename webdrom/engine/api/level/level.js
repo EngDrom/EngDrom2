@@ -96,4 +96,8 @@ class Level {
             } else instance.render(default_shader, camera);
         }
     }
+    renderRTS (raytracer, camera) {
+        for (let [ name, type, instance, options ] of this.instances)
+            instance.renderRTS(raytracer, camera);
+    }
 }
