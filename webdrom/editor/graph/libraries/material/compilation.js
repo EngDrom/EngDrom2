@@ -89,6 +89,7 @@ class MaterialGraphCompilation extends GraphCompilation {
         return TEMPLATE.join("\n")
     }
     compile (nodes, context) {
+        console.log(context)
         this.roads   = context.roads;
         this.t_roads = context.t_roads;
         this.nodes   = nodes;
@@ -96,7 +97,6 @@ class MaterialGraphCompilation extends GraphCompilation {
         let context_fg = this.make(context.pos_fg_out)
         let context_vt = this.make(context.pos_vt_out)
 
-        console.log(this.render_vertex(context_vt))
-        console.log(this.render_fragment(context_fg))
+        return [ this.render_vertex(context_vt), this.render_fragment(context_fg) ]
     }
 }

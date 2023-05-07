@@ -117,6 +117,8 @@ class GridMesh extends MeshInstance {
                 this.layers.push(
                     new GridLayer(context, transform, this, layer)
                 );
+            
+            context.engine.render_level_tree();
         }));
     }
 

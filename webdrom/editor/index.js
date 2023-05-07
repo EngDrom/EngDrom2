@@ -48,7 +48,11 @@ class HomeProjectPage extends ProjectPage {
                 return new FileTree(parent, action).render()
             }, "icons": []  },
             { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  },
-            { "text": "Level", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  }
+            { "text": "Level", "component": (parent) => {
+                let lt = new LevelTree(parent, this.engine);
+
+                return lt.render();
+            }, "icons": []  }
         ] });
         let property_tree = new MExplorer(this, {
             "text": "Properties",

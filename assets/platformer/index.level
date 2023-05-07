@@ -1,15 +1,15 @@
 {
-    "scripts": "index.dmd",
+    "scripts": [ "index.dmd" ],
     "gravity_strength": 5,
     "instances": [
         {
             "type": "mesh",
             "name": "Background", 
-            "position": { "x": 0, "y": 0, "z" : 0 }, 
+            "position": { "x": 0, "y": 0, "z" : -10 }, 
             "rotation": { "x": 0, "y": 0, "z" : 0 }, 
-            "scale"   : { "x": 1, "y": 1, "z" : 1 },
+            "scale"   : { "x": 1000, "y": 1000, "z" : 1 },
             "mesh"    : "index.mesh",
-            "material": "index.mat",
+            "material": "color.mat",
 
             "properties": {},
             "textures"  : {}

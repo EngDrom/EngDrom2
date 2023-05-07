@@ -3,8 +3,8 @@ class WebGLCanvas extends Component {
     constructor (parent, engine) {
         super(parent);
 
-        this._first_render();
         this.engine = engine;
+        this._first_render();
     }
 
     _first_render () {
@@ -49,7 +49,7 @@ class WebGLCanvas extends Component {
         this.web_gl.projection = new PerspectiveTransform(fov, asp, zNr, zFr);
     }
     make_gl () {
-        this.web_gl = new ExtendedWebGLContext(this.canvas.getContext("webgl"))
+        this.web_gl = new ExtendedWebGLContext(this.canvas.getContext("webgl"), this.engine)
         this.make_projection();
 
         this.web_gl.default_shader = this.web_gl.loadProgram(`attribute vec3 aVertexPosition;
@@ -71,25 +71,6 @@ class WebGLCanvas extends Component {
           }`);
         this.web_gl.default_shader.addTarget("aVertexPosition", 0);
         this.web_gl.default_shader.addTarget("aTextCoord", 1);
-        this.shader = this.web_gl.loadProgram(`attribute vec3 aVertexPosition;
-        attribute vec2 aTextCoord;
-        uniform mat4 mModel;
-        uniform mat4 mProj;
-        uniform mat4 mCamera;
-        varying lowp vec2 textCoord;
-        
-        void main(void) {
-          gl_Position = mProj * mCamera * mModel * vec4(aVertexPosition, 1.0);
-          textCoord = aTextCoord;
-        }`, `varying lowp vec2 textCoord;
-        uniform sampler2D text;
-        uniform sampler2D text2;
-        
-        void main(void) {
-            gl_FragColor = texture2D(text, textCoord) * texture2D(text2, textCoord);
-          }`);
-        this.shader.addTarget("aVertexPosition", 0);
-        this.shader.addTarget("aTextCoord", 1);
 
         this.level = new Level(this.web_gl, "index.level");
 

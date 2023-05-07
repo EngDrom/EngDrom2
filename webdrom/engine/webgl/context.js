@@ -12,8 +12,9 @@ function create_extended_context_proxy ( object ) {
 
 
 class ExtendedWebGLContext {
-    constructor (context) {
+    constructor (context, engine) {
         this.context = context;
+        this.engine  = engine;
 
         return create_extended_context_proxy(this);
     }

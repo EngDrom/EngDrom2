@@ -21,6 +21,8 @@ class Level {
 
                 this.instances.push(inst);
             }
+            
+            this.context.engine.render_level_tree();
         }))
     }
 
@@ -36,6 +38,8 @@ class Level {
         if (json.type === "grid") return this.create_grid (json);
         if (json.type === "atlas.mesh")
             return this.create_atlas_mesh(json);
+        if (json.type === "mesh")
+            return this.create_simple_mesh(json);
     }
     create_grid (json) {
         let transform = new Transform(0, 0, json.pos_z, 0, 0, 0, 1, 1, 1);
@@ -47,7 +51,19 @@ class Level {
         );
         this.world.append( new Grid_HitBox(grid) );
 
-        return [ json.name, "grid", grid ];
+        return [ json.name, "grid", grid, {  } ];
+    }
+    create_simple_mesh (json) {
+        let transform = this.extract_transform(json);
+
+        let mesh = new SavedMesh(this.context, json.mesh);
+        let mat  = new Material (this.context, json.material);
+
+        let inst = new MeshInstance( this.context, mesh, transform );
+
+        inst.textures = {};
+
+        return [ json.name, "mesh", inst, { material: mat } ];
     }
     create_atlas_mesh (json) {
         let transform = this.extract_transform(json);
@@ -70,11 +86,14 @@ class Level {
             instance.textures = { uTexture: atlas }
         });
 
-        return [ json.name, "atlas.mesh", instance ];
+        return [ json.name, "atlas.mesh", instance, {  } ];
     }
 
     render (default_shader, camera) {
-        for (let [ name, type, instance ] of this.instances)
-            instance.render(default_shader, camera);
+        for (let [ name, type, instance, options ] of this.instances) {
+            if (options.material && options.material.shader) {
+                instance.render(options.material.shader, camera);
+            } else instance.render(default_shader, camera);
+        }
     }
 }

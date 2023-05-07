@@ -18,6 +18,10 @@ class WebEngine {
         // TODO run events
     }
 
+    render_level_tree () {
+        this.level_tree._make_component();
+    }
+
     render () {
         return this.canvas.render();
     }
