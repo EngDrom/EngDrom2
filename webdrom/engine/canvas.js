@@ -93,15 +93,8 @@ class WebGLCanvas extends Component {
 
         const mu_z = -7;
 
-        this.mesh = new Mesh(
-            this.web_gl,
-            [
-                [ [0.5, 0.5, mu_z], [-0.5, 0.5, mu_z], [0.5, -0.5, mu_z], [-0.5, -0.5, mu_z] ],
-                [ [1, 0], [0, 0], [1, 1], [0, 1] ]
-            ],
-            [ 0, 1, 2, 1, 2, 3 ]
-        )
-        this.cube1 = new MeshInstance(this.web_gl, this.mesh, new Transform(8, 7, 0, 0, 0, 0, 1, 1, 1))
+        this.mesh = new SavedMesh(this.web_gl, "index.mesh");
+        this.cube1 = new MeshInstance(this.web_gl, this.mesh, new Transform(8, 7, -7, 0, 0, 0, 0.5, 0.5, 1))
         this.world = new RiceWorld();
         this.world.append( new PRectBox(-100, - 3, -100, 1000, 1, 1000) )
         this.cube1.use_collisions(this.world);
@@ -113,10 +106,7 @@ class WebGLCanvas extends Component {
 
         this.camera = new Camera();
 
-        this.pc = new AttachedPlayerController(
-            new PlanePlayerController(4, 4, [ 'l', 'r', 'u' ]),
-            this.cube1
-        );
+        this.pc = new PlanePlayerController();
     }
     clear () {
         this.web_gl.clearColor(0.0, 0.0, 0.0, 1.0)
