@@ -30,11 +30,8 @@ class Material {
 
         let [vertex, fragment] = compiler.compile( this.graph.nodes, context );
 
-        console.log(vertex, fragment)
         this.shader = this.context.loadProgram(vertex, fragment);
         this.shader.addTarget("vertexPosition", 0);
         this.shader.addTarget("textureCoordinates", 1);
-
-        console.log(this.shader)
     }
 }

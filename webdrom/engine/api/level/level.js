@@ -7,9 +7,22 @@ class Level {
 
         this.world = new RiceWorld();
 
+        this.gravity = 0;
+
+        this.player_controllers = {};
+
         fetch ('/api/fs/read/' + path).then((b) => b.json().then((json) => {
-            this.scripts = json.scripts;
             // TODO use scripts
+            this.scripts = json.scripts;
+            this.gravity = json.gravity
+
+            for (let controller of json.controllers) {
+                let cc = undefined;
+                if (controller.type === "plane") cc = new PlanePlayerController( controller.override, controller.sx, controller.sy );
+            
+                for (let mode of controller.modes)
+                    this.player_controllers[mode] = cc;
+            }
 
             for (let mesh of json.instances) {
                 let inst = this.create_mesh(mesh);
@@ -19,8 +32,20 @@ class Level {
                     continue ;
                 }
 
+                if (mesh.use_gravity) inst[2].gravity = this.gravity;
+                if (mesh.use_collisions)
+                    inst[2].use_collisions(this.world);
+                if (mesh.exempt_integration)
+                    inst[3].exempt_integration = true;
+                if (mesh.attach)
+                    for (let mode of mesh.attach)
+                        this.player_controllers[mode] = new AttachedPlayerController( 
+                            this.player_controllers[mode], inst[2]
+                        );
+
                 this.instances.push(inst);
             }
+            console.log(this.player_controllers)
             
             this.context.engine.render_level_tree();
         }))
@@ -84,9 +109,16 @@ class Level {
 
             instance.mesh     = new Mesh(this.context, vbos, indices);;
             instance.textures = { uTexture: atlas }
+            instance.reset();
         });
 
         return [ json.name, "atlas.mesh", instance, {  } ];
+    }
+
+    tick (delta_t) {
+        for (let [ name, type, instance, options ] of this.instances)
+            if (!options.exempt_integration)
+                instance.sri.integrate(delta_t);
     }
 
     render (default_shader, camera) {

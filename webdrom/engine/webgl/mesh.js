@@ -72,6 +72,8 @@ class MeshInstance {
         this.context = context;
         this.mesh    = mesh;
 
+        this.gravity = 0;
+
         this.textures = { text: new Texture(context, "preview.png"), text2: new Texture(context, "characters.png") };
 
         this.transform = transform;
@@ -90,6 +92,8 @@ class MeshInstance {
     _reset () {
         let old  = this.sri;
         this.sri = this.transform.as_sri(this.world, this.mesh?.box);
+
+        this.sri.position.acc.y -= this.gravity;
 
         if (this.sri_await) {
             this.sri.position = old.position;

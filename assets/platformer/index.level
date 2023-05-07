@@ -1,6 +1,17 @@
 {
     "scripts": [ "index.dmd" ],
-    "gravity_strength": 5,
+    "gravity": 5,
+    "controllers": [
+        {
+            "modes": ["edit", "grid"],
+            "type": "plane", "sx": 4, "sy": 4,
+            "override": { "z": 0 }
+        },{
+            "modes": ["play"],
+            "type": "plane", "sx": 4, "sy": 4,
+            "override": { "z": 0, "y": 6 }
+        }
+    ],
     "instances": [
         {
             "type": "mesh",
@@ -25,11 +36,14 @@
             "atlas": "characters.atl",
             "name": "Character",
             "use_gravity": true,
+            "use_collisions": true,
             "position": { "x": 7.5, "y": 6, "z" : -7 },
             "rotation": { "x": 0, "y": 0, "z" : 0 }, 
             "scale"   : { "x": 0.25, "y": 0.375, "z" : 1 },
             "texture_mask": [ 0.25, 0.5, 0.25, 0.75 ],
-            "coordinates" : 1
+            "coordinates" : 1,
+            "attach": ["play"],
+            "exempt_integration": true
         }
     ]
 }

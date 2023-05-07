@@ -41,6 +41,26 @@ class Grid_HitBox extends HitBox {
     }
 }
 
+RICE_HITBOX_ARRAYS.add(GridChunk_HitBox, PRectBox, (c_box, box) => {
+    if (!c_box.m_box.collide(box)) return false;
+
+    let lx = Math.floor(-(c_box.dx) + box.x);
+    let ly = Math.floor(-(c_box.dy) + box.y);
+    let rx = Math.ceil(-(c_box.dx) + box.x + box.sx + 0.1);
+    let ry = Math.ceil(-(c_box.dy) + box.y + box.sy + 0.1);
+
+    if (lx < 0) lx = 0;
+    if (ly < 0) ly = 0;
+    if (rx > 16) rx = 16;
+    if (ry > 16) ry = 16;
+
+    for (let x = lx; x < rx; x ++)
+        for (let y = ly; y < ry; y ++)
+            if (c_box.chunk.grid_data[y][x] !== -1)
+                return true;
+
+    return false;
+})
 RICE_HITBOX_ARRAYS.add(GridChunk_HitBox, HitBox, ( c_box, box) => {
     if (!c_box.m_box.collide(box)) return false;
 

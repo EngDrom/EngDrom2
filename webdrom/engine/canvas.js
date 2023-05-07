@@ -4,7 +4,14 @@ class WebGLCanvas extends Component {
         super(parent);
 
         this.engine = engine;
-        this._first_render();
+    }
+
+    change_mode (mode) {
+        if (this.mode.constructor === mode) return ;
+
+        this.mode.onend();
+        this.mode = new mode(this.engine);
+        this.mode.onbegin();
     }
 
     _first_render () {
@@ -15,7 +22,8 @@ class WebGLCanvas extends Component {
             if (!this.keys[event.key]) return ;
             this.keys[event.key] = undefined;
             
-            this.pc.onkeyend(this.camera, event.key, this.keys);
+            this.mode.get_player_controller()
+                .onkeyend(this.camera, event.key, this.keys);
         })
         document.addEventListener("keydown", (event) => {
             if (!this.canvas.classList.contains("active")
@@ -23,10 +31,15 @@ class WebGLCanvas extends Component {
             if (this.keys[event.key]) return ;
 
             this.keys[event.key] = true;
-            this.pc.onkeystart(this.camera, event.key, this.keys);
+            this.mode.get_player_controller()
+                .onkeystart(this.camera, event.key, this.keys);
+
+            if (event.key == 'e') this.change_mode( EditEngineMode )
+            if (event.key == 'p') this.change_mode( PlayEngineMode )
         })
         append_drag_listener(new Scalar(1), this.canvas, (dx, dy, ix, iy) => {
-            this.pc.ondrag(this.camera, dx, dy);
+            this.mode.get_player_controller()
+                .ondrag(this.camera, dx, dy);
         })
 
         this.component = createElement("div", {}, "w-full", [
@@ -76,7 +89,8 @@ class WebGLCanvas extends Component {
 
         this.camera = new Camera();
 
-        this.pc = new PlanePlayerController( 4, 4 );
+        this.mode = new EditEngineMode(this.engine);
+        this.mode.onbegin();
     }
     clear () {
         this.web_gl.clearColor(0.0, 0.0, 0.0, 1.0)
@@ -88,9 +102,12 @@ class WebGLCanvas extends Component {
     drawCallback (delta_interval) {
         this._runComputations();
 
-        this.pc.ontick(this.camera, delta_interval)
+        this.mode.ontick(delta_interval)
+        this.mode?.get_player_controller()
+            ?.ontick(this.camera, delta_interval)
 
         this.clear();
+        this.mode.onrender();
         this.level.render(this.web_gl.default_shader, this.camera);
     }
 
@@ -166,6 +183,8 @@ class WebGLCanvas extends Component {
         return table;
     }
     onClick (event) {
+        if (!this.mode.onclick(event)) return ;
+
         this.runPixelComputations([ [ event.layerX, event.layerY ] ], (mesh_array) => {
             let mesh_instance = mesh_array[0];    
         

@@ -89,7 +89,6 @@ class MaterialGraphCompilation extends GraphCompilation {
         return TEMPLATE.join("\n")
     }
     compile (nodes, context) {
-        console.log(context)
         this.roads   = context.roads;
         this.t_roads = context.t_roads;
         this.nodes   = nodes;
