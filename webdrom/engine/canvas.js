@@ -91,7 +91,7 @@ class WebGLCanvas extends Component {
         this.shader.addTarget("aVertexPosition", 0);
         this.shader.addTarget("aTextCoord", 1);
 
-        const mu_z = -4;
+        const mu_z = -7;
 
         this.mesh = new Mesh(
             this.web_gl,
@@ -101,19 +101,22 @@ class WebGLCanvas extends Component {
             ],
             [ 0, 1, 2, 1, 2, 3 ]
         )
-        this.cube1 = new MeshInstance(this.web_gl, this.mesh, new Transform(0, 0, 0, 0, 0, 0, 2, 1, 1))
-        this.cube2 = new MeshInstance(this.web_gl, this.mesh, new Transform(0, 0, 0, 0, 0, 0, 1, 2, 1))
+        this.cube1 = new MeshInstance(this.web_gl, this.mesh, new Transform(8, 7, 0, 0, 0, 0, 1, 1, 1))
         this.world = new RiceWorld();
         this.world.append( new PRectBox(-100, - 3, -100, 1000, 1, 1000) )
-        this.cube2.use_collisions(this.world);
-        this.cube2.reset();
-        this.cube2.sri.position.acc.y = - 1.5;
+        this.cube1.use_collisions(this.world);
+        this.cube1.reset();
+        this.cube1.sri.position.acc.y = - 5;
 
-        this.grid = new GridMesh( this.web_gl, new Transform(0, -5, -20, 0, 0, 0, 1, 1, 1), "index.grid" );
+        this.grid = new GridMesh( this.web_gl, new Transform(0, 0, -7, 0, 0, 0, 1, 1, 1), "index.grid" );
+        this.world.append( new Grid_HitBox(this.grid) );
 
         this.camera = new Camera();
 
-        this.pc = new PlanePlayerController()
+        this.pc = new AttachedPlayerController(
+            new PlanePlayerController(4, 4, [ 'l', 'r', 'u' ]),
+            this.cube1
+        );
     }
     clear () {
         this.web_gl.clearColor(0.0, 0.0, 0.0, 1.0)
@@ -129,6 +132,7 @@ class WebGLCanvas extends Component {
 
         this.clear();
         this.grid .render(this.web_gl.default_shader, this.camera);
+        this.cube1.render(this.shader, this.camera);
     }
 
     _runComputations () {
@@ -146,7 +150,6 @@ class WebGLCanvas extends Component {
         
         this.clear();
         this.cube1.renderRTS(this.raytracer, this.camera);
-        this.cube2.renderRTS(this.raytracer, this.camera);
 
         return this.getBuffer();
     }

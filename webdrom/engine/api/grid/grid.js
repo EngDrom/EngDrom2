@@ -22,15 +22,16 @@ class GridChunk extends MeshInstance {
         let dx = 16 * this.x + this.layer.dx;
         let dy = 16 * this.y + this.layer.dy;
 
+        const mu_safe = 0.001;
         for (let px = 0; px < 16; px ++) {
             for (let py = 0; py < 16; py ++) {
                 let type = this.grid_data[py][px];
                 if (type === -1) continue;
 
-                vertices.push([ dx + px,     dy + py,     0 ]);
-                vertices.push([ dx + px + 1, dy + py,     0 ]);
-                vertices.push([ dx + px,     dy + py + 1, 0 ]);
-                vertices.push([ dx + px + 1, dy + py + 1, 0 ]);
+                vertices.push([ dx + px     - mu_safe, dy + py     - mu_safe, 0 ]);
+                vertices.push([ dx + px + 1 + mu_safe, dy + py     - mu_safe, 0 ]);
+                vertices.push([ dx + px     - mu_safe, dy + py + 1 + mu_safe, 0 ]);
+                vertices.push([ dx + px + 1 + mu_safe, dy + py + 1 + mu_safe, 0 ]);
 
                 indices.push(vertices.length - 4);
                 indices.push(vertices.length - 3);
@@ -77,6 +78,7 @@ class GridLayer extends MeshInstance {
         this.textures = grid.textures;
 
         this.name = config.name;
+        this.collider = config.collider
 
         this.dx = config.pos.dx;
         this.dy = config.pos.dy;
@@ -116,6 +118,10 @@ class GridMesh extends MeshInstance {
                     new GridLayer(context, transform, this, layer)
                 );
         }));
+    }
+
+    use_collisions (world) {
+        
     }
 
     reset () {
