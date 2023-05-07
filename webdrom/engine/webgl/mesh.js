@@ -104,6 +104,8 @@ class MeshInstance {
     }
 
     render (shader, camera) {
+        if (this.mesh === undefined) return ;
+
         shader.use();
         shader.prerender();
         shader.mModel  = this.sri.as_transform();
@@ -116,6 +118,8 @@ class MeshInstance {
         this.mesh.render(shader);
     }
     renderRTS (raytracer, camera) {
+        if (this.mesh === undefined) return ;
+        
         create_raytracer_shader(this.context);
 
         this.context.raytracer.use();

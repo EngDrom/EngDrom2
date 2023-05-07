@@ -91,16 +91,7 @@ class WebGLCanvas extends Component {
         this.shader.addTarget("aVertexPosition", 0);
         this.shader.addTarget("aTextCoord", 1);
 
-        this.mesh = new SavedMesh(this.web_gl, "index.mesh");
-
-        this.cube1 = new MeshInstance(this.web_gl, this.mesh, new Transform(8, 7, -7, 0, 0, 0, 0.5, 0.5, 1))
-        
         this.level = new Level(this.web_gl, "index.level");
-
-        this.cube1.use_collisions(this.level.world);
-        this.cube1.reset();
-        this.cube1.sri.position.acc.y = - 5;
-        this.cube1.sri.position.ssp.y = 3.5;
 
         this.camera = new Camera();
 
@@ -118,12 +109,8 @@ class WebGLCanvas extends Component {
 
         this.pc.ontick(this.camera, delta_interval)
 
-        if (this.cube1.mesh.box)
-            this.cube1.sri.integrate(delta_interval);
-
         this.clear();
         this.level.render(this.web_gl.default_shader, this.camera);
-        this.cube1.render(this.shader, this.camera);
     }
 
     _runComputations () {
@@ -140,7 +127,6 @@ class WebGLCanvas extends Component {
         this.raytracer = new RayTracer();
         
         this.clear();
-        this.cube1.renderRTS(this.raytracer, this.camera);
 
         return this.getBuffer();
     }

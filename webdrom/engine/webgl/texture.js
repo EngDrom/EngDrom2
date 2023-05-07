@@ -6,12 +6,14 @@ function isPowerOf2(value) {
 const TEXTURE_ARRAYS = {};
 
 class Texture {
-    constructor (web_gl, url) {
+    constructor (web_gl, url, name = undefined) {
+        if (name === undefined) name = url;
+
         if (!TEXTURE_ARRAYS[this.constructor])
             TEXTURE_ARRAYS[this.constructor] = {};
-        if (TEXTURE_ARRAYS[this.constructor][url])
-            return TEXTURE_ARRAYS[this.constructor][url];
-        TEXTURE_ARRAYS[this.constructor][url] = this;
+        if (TEXTURE_ARRAYS[this.constructor][name])
+            return TEXTURE_ARRAYS[this.constructor][name];
+        TEXTURE_ARRAYS[this.constructor][name] = this;
 
         this.web_gl = web_gl;
         this.image   = new Image();
@@ -67,7 +69,7 @@ class Texture {
 
 class AtlasTexture extends Texture {
     constructor (web_gl, url) {
-        super(web_gl, undefined);
+        super(web_gl, undefined, url);
 
         this.atlas = [];
 
@@ -100,7 +102,7 @@ class AtlasTexture extends Texture {
     async wait () {
         await this.promise;
     }
-    coordinates (index) {
+    coordinates (index, mask = undefined) {
         let [x, y, w, h] = this.atlas[index];
 
         x += 0.1
@@ -112,6 +114,15 @@ class AtlasTexture extends Texture {
         let y0 = y;
         let x1 = x + w;
         let y1 = y + h;
+
+        if (mask) {
+            let [lx, sx, ly, sy] = mask;
+
+            x0 += w * lx;
+            y0 += h * ly;
+            x1  = x0 + sx * w;
+            y1  = y0 + sy * h;
+        }
 
         return [
             [ x0 / this.image.width, y1 / this.image.height ],
