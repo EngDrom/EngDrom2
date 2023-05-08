@@ -12,6 +12,8 @@ class WebGLCanvas extends Component {
         this.mode.onend();
         this.mode = new mode(this.engine);
         this.mode.onbegin();
+        this.mode.onmeshclicked(this.clicked_mesh_instance);
+        this.fill_component();
     }
 
     _first_render () {
@@ -23,6 +25,9 @@ class WebGLCanvas extends Component {
 
         document.addEventListener("WebDrom.MeshInstance.Clicked", (ev) => {
             this.clicked_mesh_instance = ev.meshInstance;
+            let needs_fill = this.mode.onmeshclicked(this.clicked_mesh_instance);
+        
+            if (needs_fill) this.fill_component();
         })
 
         document.addEventListener("keyup", (event) => {
@@ -60,6 +65,17 @@ class WebGLCanvas extends Component {
 
         this.observer = new ResizeObserver( (event) => this.onResize(event) )
         this.observer.observe(this.canvas);
+    }
+    fill_component () {
+        if (this.fillable_component === undefined) return ;
+
+        let comp = this.mode.get_component()
+    
+        this.fillable_component.fill(comp);
+    }
+    set_fillable_component (comp) {
+        this.fillable_component = comp;
+        this.fill_component();
     }
     make_projection () {
         const fov = 45 * Math.PI / 180;
@@ -99,6 +115,7 @@ class WebGLCanvas extends Component {
 
         this.mode = new EditEngineMode(this.engine);
         this.mode.onbegin();
+        this.mode.onmeshclicked(this.clicked_mesh_instance);
     }
     clear () {
         this.web_gl.clearColor(0.0, 0.0, 0.0, 1.0)

@@ -102,6 +102,9 @@ class AtlasTexture extends Texture {
     async wait () {
         await this.promise;
     }
+    rcoord (index) {
+        return this.atlas[index];
+    }
     coordinates (index, mask = undefined) {
         let [x, y, w, h] = this.atlas[index];
 

@@ -61,15 +61,33 @@ class GridEngineMode extends EditEngineMode {
 
         let [bx, by] = this.find_pos(instance, event);
 
-        instance.setTile(bx, by, type);
+        instance.setTile(bx, by, type(instance.grid));
+    }
+    get_component () {
+        if (this.current_potential_layer === undefined
+         || (
+            !(this.current_potential_layer instanceof GridLayer)
+         && !(this.current_potential_layer instanceof GridMesh)
+            )
+        ) return undefined;
+        
+        let grid = this.current_potential_layer.grid instanceof GridLayer
+                 ? this.current_potential_layer.grid : this.current_potential_layer;
+        return new AtlasPicker(this.engine.canvas.fillable_component, grid.atlas).render();
     }
 
+    onmeshclicked (instance) {
+        this.current_potential_layer = instance;
+        return true;
+    }
     onclick (event) {
-        this.place_tile(event, 0);
+        this.place_tile(event, (grid) => {
+            return grid.atlas.picker.enabled_index;
+        });
 
         return false;
     }
     oncontextmenu (event) {
-        this.place_tile(event, -1);
+        this.place_tile(event, (grid) => -1);
     }
 }

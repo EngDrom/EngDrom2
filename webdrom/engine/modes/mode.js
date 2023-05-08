@@ -32,6 +32,8 @@ class EngineMode {
         this.get_camera().reload();
     }
 
+    get_component () {}
+
     onbegin () { // change mode
     }
     onlevelbegin () { // enter level
@@ -39,6 +41,9 @@ class EngineMode {
     ontick (delta_t) { // on frame
     }
     onrender () {
+    }
+    onmeshclicked (instance) { 
+        return false; // does fillable component needs refresh
     }
     onclick (event) {
         return true; // allow renderRTS
