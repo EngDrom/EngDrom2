@@ -144,9 +144,9 @@ class MGraph extends Component {
 
         this.element.style.transform = `scale(calc(1 / ${this.scale}))`;
         this.element.style.width     = `calc(${this.scale} * 100%)`
-        this.element.style.height    = `calc(${this.scale} * 100%)`
+        this.element.style.height    = `calc(${this.scale} * 100% - 48px)`
         this.element.style.left      = `calc(-1 * ${this.scale - 1} * 50%)`
-        this.element.style.top       = `calc(-1 * ${this.scale - 1} * 50%)`
+        this.element.style.top       = `calc(-1 * ${this.scale - 1} * 50% + 48px)`
         this.bg_element.style.width     = `calc(${this.scale} * (100% + 4 * var(--webdrom-editor-graph-grid-size)))`
         this.bg_element.style.height    = `calc(${this.scale} * (100% + 4 * var(--webdrom-editor-graph-grid-size)))`
         this.bg_element.style.left      = `calc(${this.scale} * (- 2 * var(--webdrom-editor-graph-grid-size)))`
@@ -179,7 +179,9 @@ class MGraph extends Component {
             this.bg_element,
             ...(this.nodes.map((x) => x.render()))
         ]);
-        this.rel_element = createElement("div", {}, "w-full h-full relative", [ this.element ]);
+        this.rel_element = createElement("div", {}, "absolute left-0 h-full w-full", [
+            createElement("div", {}, "w-full h-full relative", [ this.element ])
+        ]);
 
         this.use_scale(1);
 

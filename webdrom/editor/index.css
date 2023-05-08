@@ -46,10 +46,11 @@
 
     --webdrom-navbar-background: #1a1a1a;
     --webdrom-background: #1e1e1e;
-    --webdrom-contrast-background: #2c2c2c;
+    --webdrom-mean-light-background: #222223;
     --webdrom-light-background: #252526;
     --webdrom-lighter-background: #282828;
     --webdrom-contrast-light-background: #2b2b2b;
+    --webdrom-contrast-background: #2c2c2c;
     --webdrom-contrast-lighter-background: #37373d;
     --webdrom-editor-separate: #505050;
     --webdrom-editor-blue-button: #0065a8;

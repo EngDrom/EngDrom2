@@ -7,8 +7,6 @@ function main (api) {
         y = xyz.y
         z = xyz.z
 
-        print(x,y,z)
-
         if (y < 3) {
             camera.sri.position.spe.x = 0
             camera.sri.position.spe.y = 0
