@@ -5,6 +5,8 @@ class Level {
         this.instances = [];
         this.scripts   = [];
 
+        this.animations = [];
+
         this.drom_scripts   = [];
         this.engdrom_module = new EngDromModule();
 
@@ -188,25 +190,18 @@ class Level {
     }
     create_atlas_mesh (json) {
         let transform = this.extract_transform(json);
-        let instance  = new MeshInstance(this.context, undefined, transform);
         let atlas     = new AtlasTexture(this.context, json.atlas);
+        let instance  = new TextureAtlasMeshInstance(this.context, undefined, transform, atlas);
         let options   = { atlas: json.atlas }
+
+        this.animations.push(new Animation( "characters.anim", instance ));
 
         atlas.wait().then(() => {
             if (json.texture_mask)
                 instance.texture_mask = json.texture_mask;
             options.coordinates = json.coordinates
 
-            let [mu00, mu01, mu10, mu11] = atlas.coordinates(json.coordinates, json.texture_mask);
-            
-            let vbos = [ 
-                [ [1, 1, 0], [-1, 1, 0], [1, -1, 0], [-1, -1, 0] ],
-                [ mu10, mu11, mu01, mu00 ]
-            ];
-            let indices = [0, 1, 2, 1, 2, 3];
-
-            instance.mesh     = new Mesh(this.context, vbos, indices);;
-            instance.textures = { uTexture: atlas }
+            instance.setCoordinates(json.coordinates);
             instance.reset();
         });
 
@@ -218,6 +213,8 @@ class Level {
             if (!options.exempt_integration)
                 instance.sri.integrate(delta_t);
         
+        for (let animation of this.animations)
+            animation.advance();
         this.engdrom_module.runframe(this.context.engine.canvas.camera);
     }
 

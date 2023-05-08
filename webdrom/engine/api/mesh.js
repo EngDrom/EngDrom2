@@ -23,3 +23,22 @@ class SavedMesh extends Mesh {
     }
 }
 
+class TextureAtlasMeshInstance extends MeshInstance {
+    constructor (context, mesh, transform, atlas) {
+        super(context, mesh, transform);
+        this.atlas = atlas;
+    }
+
+    setCoordinates (coordinates) {
+        let [mu00, mu01, mu10, mu11] = this.atlas.coordinates(coordinates, this.texture_mask);
+            
+        let vbos = [ 
+            [ [1, 1, 0], [-1, 1, 0], [1, -1, 0], [-1, -1, 0] ],
+            [ mu10, mu11, mu01, mu00 ]
+        ];
+        let indices = [0, 1, 2, 1, 2, 3];
+
+        this.mesh     = new Mesh(this.context, vbos, indices);;
+        this.textures = { uTexture: this.atlas }
+    }
+}

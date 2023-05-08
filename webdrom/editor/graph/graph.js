@@ -69,8 +69,8 @@ const MGRAPH_ARRAYS = {}
 class MGraph extends Component {
     constructor (parent, file_path) {
         super(parent);
-        if (MGRAPH_ARRAYS[file_path]) return MGRAPH_ARRAYS[file_path]
-        MGRAPH_ARRAYS[file_path] = this;
+        if (MGRAPH_ARRAYS[file_path] && file_path) return MGRAPH_ARRAYS[file_path]
+        if (file_path) MGRAPH_ARRAYS[file_path] = this;
 
         this.editor = parent;
 
@@ -263,7 +263,7 @@ class MGraph extends Component {
             for (let input_id = 0; input_id < json_node.inputs.length; input_id ++) {
                 let parent_data = json_node.inputs[input_id].parent;
                 if (parent_data === -1) continue ;
-
+                
                 this.nodes[id_node].inputs[input_id].appendParent(
                     this.nodes[parent_data.node_id].outputs[parent_data.vect_id]    
                 );
