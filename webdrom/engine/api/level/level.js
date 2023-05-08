@@ -5,16 +5,25 @@ class Level {
         this.instances = [];
         this.scripts   = [];
 
+        this.drom_scripts   = [];
+        this.engdrom_module = new EngDromModule();
+
         this.world = new RiceWorld();
 
         this.gravity = 0;
 
         this.player_controllers = {};
 
+        this.file_path = path;
+
         fetch ('/api/fs/read/' + path).then((b) => b.json().then((json) => {
             // TODO use scripts
             this.scripts = json.scripts;
-            this.gravity = json.gravity
+            this.gravity = json.gravity;
+
+            this.drom_scripts = this.scripts.map((file) => new Script(context, file));
+
+            this.controllers_json = json.controllers;
 
             for (let controller of json.controllers) {
                 let cc = undefined;
@@ -32,16 +41,23 @@ class Level {
                     continue ;
                 }
 
-                if (mesh.use_gravity) inst[2].gravity = this.gravity;
-                if (mesh.use_collisions)
+                if (mesh.use_gravity) {
+                    inst[3].use_gravity = true;
+                    inst[2].gravity = this.gravity;
+                }
+                if (mesh.use_collisions) {
                     inst[2].use_collisions(this.world);
+                    inst[3].use_collisions = true;
+                }
                 if (mesh.exempt_integration)
                     inst[3].exempt_integration = true;
-                if (mesh.attach)
+                if (mesh.attach) {
                     for (let mode of mesh.attach)
                         this.player_controllers[mode] = new AttachedPlayerController( 
                             this.player_controllers[mode], inst[2]
                         );
+                    inst[3].attach = mesh.attach
+                }
 
                 this.instances.push(inst);
             }
@@ -56,6 +72,87 @@ class Level {
             json.rotation.x, json.rotation.y, json.rotation.z,
             json.scale   .x, json.scale   .y, json.scale   .z,
         );
+    }
+
+    serialize () {
+        let instances = [];
+
+        for (let [ name, type, instance, options ] of this.instances) {
+            let instance_json = {
+                type,
+                name
+            };
+
+            if (type !== "grid") {
+                let transform = instance.transform
+                instance_json.position = { x: transform. __x, y: transform. __y, z: transform. __z }
+                instance_json.rotation = { x: transform.__rx, y: transform.__ry, z: transform.__rz }
+                instance_json.scale    = { x: transform.__sx, y: transform.__sy, z: transform.__sz }
+            }
+
+            if (options.exempt_integration)
+                instance_json.exempt_integration = true;
+            if (options.use_collisions)
+                instance_json.use_collisions = true;
+            if (options.use_gravity)
+                instance_json.use_gravity = true;
+            if (options.attach)
+                instance_json.attach = options.attach
+            
+            if (type === "atlas.mesh") {
+                instance_json.atlas = options.atlas
+                instance_json.coordinates = options.coordinates
+                if (instance.texture_mask)
+                    instance_json.texture_mask = instance.texture_mask
+            }
+            if (type === "grid") {
+                instance.save_file();
+                
+                let transform = instance.transform
+                instance_json.pos_z  = transform.__z;
+                instance_json.target = options.path;
+            }
+            if (type === "mesh") {
+                instance_json.mesh = options.mesh_path;
+                instance_json.material = options.mat_path;
+                instance_json.textures = {}
+                instance_json.properties = {}
+            }
+
+            instances.push(instance_json)
+        }
+
+        return {
+            gravity: this.gravity,
+            scripts: this.scripts,
+            controllers: this.controllers_json,
+            instances: instances
+        }
+    }
+    save_file () {
+        let json = this.serialize();
+
+        let text = JSON.stringify(json, null, 2)
+
+        fetch("/api/fs/save/"+this.file_path, {
+            method: 'PUT',
+            headers: {
+              'Content-length' : text.length
+            },
+            body: text
+          }).then((body) => {
+            if (body.status === 201 || body.status === 200) return ;
+            this.context.engine.project.alert_manager.addAlert([ "danger", "Could not save file, Status code " + body.status ])
+          });
+    }
+
+    onbegin () {
+        this.engdrom_module.reset();
+        
+        for (let script of this.drom_scripts)
+            script.execute({ engdrom: this.engdrom_module })
+        
+        this.engdrom_module.runload();
     }
 
     create_mesh (json) {
@@ -75,7 +172,7 @@ class Level {
         );
         this.world.append( new Grid_HitBox(grid) );
 
-        return [ json.name, "grid", grid, {  } ];
+        return [ json.name, "grid", grid, { path: json.target } ];
     }
     create_simple_mesh (json) {
         let transform = this.extract_transform(json);
@@ -87,16 +184,18 @@ class Level {
 
         inst.textures = {};
 
-        return [ json.name, "mesh", inst, { material: mat } ];
+        return [ json.name, "mesh", inst, { material: mat, mesh_path: json.mesh, mat_path: json.material } ];
     }
     create_atlas_mesh (json) {
         let transform = this.extract_transform(json);
         let instance  = new MeshInstance(this.context, undefined, transform);
         let atlas     = new AtlasTexture(this.context, json.atlas);
+        let options   = { atlas: json.atlas }
 
         atlas.wait().then(() => {
             if (json.texture_mask)
                 instance.texture_mask = json.texture_mask;
+            options.coordinates = json.coordinates
 
             let [mu00, mu01, mu10, mu11] = atlas.coordinates(json.coordinates, json.texture_mask);
             
@@ -111,13 +210,15 @@ class Level {
             instance.reset();
         });
 
-        return [ json.name, "atlas.mesh", instance, {  } ];
+        return [ json.name, "atlas.mesh", instance, options ];
     }
 
     tick (delta_t) {
         for (let [ name, type, instance, options ] of this.instances)
             if (!options.exempt_integration)
                 instance.sri.integrate(delta_t);
+        
+        this.engdrom_module.runframe(this.context.engine.canvas.camera);
     }
 
     render (default_shader, camera) {

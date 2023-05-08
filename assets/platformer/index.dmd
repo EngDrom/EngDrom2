@@ -1,27 +1,25 @@
 import engdrom
-function main (engine) {
-    function frame (controller, camera) {
-        xyz = controller.mesh.get_position()
-        x = xyz[0]
-        y = xyz[1]
-        z = xyz[2]
+
+function main (api) {
+    function frame (camera) {
+        xyz = camera.sri.position.pos
+        x = xyz.x
+        y = xyz.y
+        z = xyz.z
 
         print(x,y,z)
 
         if (y < 3) {
-            controller.mesh.matrix.reset_translation()
-            controller.mesh.matrix.translate(9, 6, 0)
-        }
-        if (x > 36) {
-            controller.move_enabled = 0
-            controller.mesh.matrix.translate(0, 1/8,0)
-        } else {
-            controller.move_enabled = 1
+            camera.sri.position.spe.x = 0
+            camera.sri.position.spe.y = 0
+            camera.sri.position.spe.z = 0
+            camera.sri.position.pos.x = 8
+            camera.sri.position.pos.y = 6
+            camera.sri.position.pos.z = -7
         }
     }
 
-    controller = engine.getControllers()[0]
-    controller.addFrame(frame)
+    api.onframe(frame)
 }
 
-engdrom.awaitLevelLoaded(main)
+engdrom.onload(main)

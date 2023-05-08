@@ -21,6 +21,7 @@ const Dromadaire = ( function () {
     const NAME_TOKEN   = token_gen("NAME");
     const NUMBER_TOKEN = token_gen("NUMBER");
     const DOT_TOKEN    = token_gen("DOT");
+    const COMMA_TOKEN  = token_gen("COMMA");
     const PLUS_TOKEN   = token_gen("PLUS");
     const MINUS_TOKEN  = token_gen("MINUS");
     const TIMES_TOKEN  = token_gen("TIMES");
@@ -35,6 +36,14 @@ const Dromadaire = ( function () {
     const LCURLY_BRACKET   = token_gen("LCURLY_BRACKET")
     const VERT_LINE        = token_gen("VERT_LINE")
 
+    const LESS       = token_gen("LESS")
+    const LESS_EQ    = token_gen("LESS_EQ")
+    const GREATER    = token_gen("GREATER")
+    const GREATER_EQ = token_gen("GREATER_EQ")
+    const NOT_EQ     = token_gen("NOT_EQ")
+    const NOT        = token_gen("NOT")
+    const EQ         = token_gen("EQ")
+
     const EOF = token_gen("EOF")
     
     /**
@@ -42,6 +51,7 @@ const Dromadaire = ( function () {
      */
     const OPERATOR_TREE = [
         { "char": ".",  "token": DOT_TOKEN        },
+        { "char": ",",  "token": COMMA_TOKEN      },
         { "char": "+",  "token": PLUS_TOKEN       },
         { "char": "-",  "token": MINUS_TOKEN      },
         { "char": "*",  "token": TIMES_TOKEN      },
@@ -53,8 +63,19 @@ const Dromadaire = ( function () {
         { "char": "}",  "token": RCURLY_BRACKET   },
         { "char": "]",  "token": RSQUARED_BRACKET },
         { "char": ")",  "token": RBRACKET         },
-        { "char": "=",  "token": SET_TOKEN        },
+        { "char": "=",  "token": SET_TOKEN, "subtokens": [
+            { "char": "=", "token": EQ }
+        ]},
         { "char": ";",  "token": EOF              },
+        { "char": "!",  "token": NOT, "subtokens": [
+            { "char": "=", "token": NOT_EQ }
+        ]},
+        { "char": "<",  "token": LESS, "subtokens": [
+            { "char": "=", "token": LESS_EQ }
+        ]},
+        { "char": ">",  "token": GREATER, "subtokens": [
+            { "char": "=", "token": GREATER_EQ }
+        ]},
         { "char": "\n", "token": EOF              }
     ]
 
@@ -669,8 +690,7 @@ const Dromadaire = ( function () {
             
             cursor.restore_arguments()
             cursor.free(true)
-            console.error("TODO put nodes inside of BlockNode")
-            cursor.addArgument( nodes );
+            cursor.addArgument( new BlockNode( nodes ) );
 
             return [ COMPILER_CONTINUE_NODE, false ];
         }
@@ -705,7 +725,7 @@ const Dromadaire = ( function () {
             return COMPILER_CONTINUE_NODE
         }
     }
-    class TokenRule     extends ParserRule {
+    class TokenRule extends ParserRule {
         constructor (type, add_val, expected_value=undefined) {
             super();
             this.type    = TOKEN_TYPES[ type ];
@@ -717,7 +737,7 @@ const Dromadaire = ( function () {
         parse (cursor) {
             if (cursor.get_cur_token().type() == this.type
              && (this.expected_value === undefined || this.expected_value == cursor.get_cur_token().value())) {
-                if ( self.add_val ) {
+                if ( this.add_val ) {
 				    if ( cursor.get_cur_token().value() !== undefined )
 				    	cursor.addArgument(cursor.get_cur_token().value())
 				    else
@@ -782,7 +802,10 @@ const Dromadaire = ( function () {
                 cursor.addArgument(value)
                 
                 return COMPILER_CONTINUE_NODE
-            } catch (error) {  }
+            } catch (error) {
+                if (error !== 'Token not recognized')
+                    console.error(error)
+            }
 
             this.cursor = undefined
             cursor.free(false)
@@ -821,17 +844,76 @@ const Dromadaire = ( function () {
             return left;
         }
         _factor () {
-            return this.factor_term()
+            let term = this.factor_term()
+            
+            let found = true;
+            while (found) {
+                found = false;
+                while (this.get_cur_token()
+                && (
+                    this.get_cur_token().type() === DOT_TOKEN
+                )) {
+                    this.cursor.tok_idx ++;
+                    let tok = this.get_cur_token();
+
+                    if (this.get_cur_token().type() !== NAME_TOKEN) {
+                        let error = new ParserError( `Unknown token { ${ TOKEN_TYPE_BY_ID[ tok.type() ] }, ${tok.value()} } after '.', expected NAME`, "EXPRESSION:FACTOR", [] )
+                        let state = this.saveState(this.cursor);
+                        this.saveEndState(state, this.cursor);
+                        this.apply(state, this.cursor, error);
+                        this.cursor.errors.push(error)
+
+                        throw 'Token not recognized';
+                    }
+
+                    this.cursor.tok_idx ++;
+                    found = true;
+
+                    term = new LoadDynamicNode(term, tok.value());
+                }
+
+                while (this.get_cur_token()
+                 && this.get_cur_token().type() === LBRACKET) {
+                    this.cursor.tok_idx ++;
+                    
+                    let first = true;
+                    let args  = [];
+                    while (first || this.get_cur_token().type() === COMMA_TOKEN) {
+                        if (!first) this.cursor.tok_idx ++;
+                        first = false;
+
+                        args.push(this.operator_priority(0));
+                    }
+
+                    if (this.get_cur_token().type() !== RBRACKET) {
+                        let error = new ParserError( `Unknown token { ${ TOKEN_TYPE_BY_ID[ tok.type() ] }, ${tok.value()} } after call, expected '}'`, "EXPRESSION:FACTOR", [] )
+                        let state = this.saveState(this.cursor);
+                        this.saveEndState(state, this.cursor);
+                        this.apply(state, this.cursor, error);
+                        this.cursor.errors.push(error)
+
+                        throw 'Token not recognized';
+                    }
+                    this.cursor.tok_idx ++;
+
+                    term = new CallFunctionNode(term, args);
+                }
+            }
+
+            return term;
         }
         factor_term () {
             let tok = this.get_cur_token()
 
             this.cursor.tok_idx ++;
+            if (tok.type() == NUMBER_TOKEN) return new ConstantNode(+ new Number(tok.value()))
+            if (tok.type() == NAME_TOKEN)
+                return new LoadStaticNode(tok.value());
+            if (tok.type() == MINUS_TOKEN)
+                return new UnaryNode(MINUS_TOKEN, this._factor());
 
-            if (tok.type() == NUMBER_TOKEN) return new ConstantNode(new Number(tok.value()))
-            
             this.cursor.tok_idx --;
-            let error = new ParserError( `Unknown token { ${ TOKEN_TYPES[ tok.type() ] }, ${tok.value()} }`, "EXPRESSION:FACTOR", [] )
+            let error = new ParserError( `Unknown token { ${ TOKEN_TYPE_BY_ID[ tok.type() ] }, ${tok.value()} }`, "EXPRESSION:FACTOR", [] )
             let state = this.saveState(this.cursor);
             this.saveEndState(state, this.cursor);
             this.apply(state, this.cursor, error);
@@ -980,6 +1062,7 @@ const Dromadaire = ( function () {
 
     const _RuleCompiler = new RuleCompiler()
     const DROM_EXPRESSION_RULE = new ExpressionRule( [
+        [NOT_EQ, LESS_EQ, GREATER_EQ, GREATER, LESS, EQ],
         [PLUS_TOKEN, MINUS_TOKEN],
         [TIMES_TOKEN, DIVIDE_TOKEN]
     ] )
@@ -996,15 +1079,237 @@ const Dromadaire = ( function () {
         }
     }
 
+    /**
+     * Node types for stdlib
+     */
+
+    class Node extends PositionBased {
+        evaluate (context) {
+            throw "Abstract Node does not have any evaluation function"
+        }
+        set (context, value) {
+            throw "Abstract Node does not have any set function"
+        }
+    }
+    class LoadStaticNode extends Node {
+        constructor (name) {
+            super();
+            this.name = name;
+        }
+        evaluate (context) {
+            return context[this.name];
+        }
+        set (context, value) {
+            context[this.name] = value;
+        }
+    }
+    class LoadDynamicNode extends Node {
+        constructor (left, name) {
+            super();
+            this.left = left;
+            this.name = name;
+        }
+        evaluate (context) {
+            return this.left.evaluate(context)[this.name];
+        }
+        set (context, value) {
+            let obj = this.left.evaluate(context);
+            obj[this.name] = value;
+        }
+    }
+    class CallFunctionNode extends Node {
+        constructor (func, args) {
+            super();
+
+            this.func = func;
+            this.args = args;
+
+            this.transferPosition(this.func);
+            this.size += 2; // brackets
+            if (this.args.length !== 0) this.size += this.args.length - 1;
+
+            for (let arg of this.args) this.size += arg.size;
+        }
+        evaluate (context) {
+            let args = this.args.map((x) => x.evaluate(context))
+
+            return this.func.evaluate(context)(...args)
+        }
+        set (context, value) {
+            throw "Cannot set the value of a call";
+        }
+    }
+    class OperatorNode extends Node {
+        constructor (left, right, operand) {
+            super();
+            this.left    = left;
+            this.transferPosition(this.left);
+
+            this.right   = right;
+            this.size    = this.right.idx + this.right.size - this.left.idx;
+            this.operand = operand;
+        }
+        set (context, value) {
+            throw "Cannot set the value of an operand";
+        }
+        evaluate (context) {
+            let left  = this.left .evaluate(context);
+            let right = this.right.evaluate(context);
+
+            if (this.operand == PLUS_TOKEN  ) return left + right;
+            if (this.operand == MINUS_TOKEN ) return left - right;
+            if (this.operand == TIMES_TOKEN ) return left * right;
+            if (this.operand == DIVIDE_TOKEN) return left / right;
+
+            if (this.operand == EQ        ) return left === right;
+            if (this.operand == NOT_EQ    ) return left !== right;
+            if (this.operand == LESS      ) return left <   right;
+            if (this.operand == LESS_EQ   ) return left <=  right;
+            if (this.operand == GREATER   ) return left >   right;
+            if (this.operand == GREATER_EQ) return left >=  right;
+
+            throw "Operand " + TOKEN_TYPE_BY_ID[this.operand] + " was not implemented";
+        }
+    }
+    class ConstantNode extends Node {
+        constructor (value) {
+            super()
+            this.value = value;
+        }
+        evaluate (context) { return this.value; }
+        set (context, value) {
+            throw "Cannot set a constant value";
+        }
+    }
+    class SetNode extends Node {
+        constructor (left, right) {
+            super();
+
+            this.left  = left;
+            this.right = right;
+        }
+        evaluate (context) {
+            let value = this.right.evaluate(context)
+            this.left.set(context, value);
+            return value;
+        }
+        set (context, value) {
+            throw "Cannot set the value of a SetNode";
+        }
+    }
+    class UnaryNode extends Node {
+        constructor (oper, term) {
+            super();
+
+            this.oper = oper;
+            this.term = term;
+        }
+        evaluate (context) {
+            if (this.oper === MINUS_TOKEN) return - this.term.evaluate(context);
+
+            throw "UnaryNode is not implemented for operand " + TOKEN_TYPE_BY_ID[ this.oper ];
+        }
+        set (context, value) {
+            throw "Cannot set the value of a unary operand";
+        }
+    }
+    class BlockNode extends Node {
+        constructor (nodes) {
+            super();
+
+            this.nodes = nodes;
+        }
+        set (context, value) {
+            throw "Cannot set the value of a BlockNode";
+        }
+        evaluate (context) {
+            for (let node of this.nodes)
+                node.evaluate(context);
+        }
+    }
+
+    class ImportNode extends Node {
+        constructor (name, ...modules) {
+            super();
+            this.name    = name;
+            this.modules = modules;
+        }
+        set (context, value) {
+            throw "Cannot set the value of an ImportNode";
+        }
+        evaluate (context) {
+            context[this.name] = context.__modules__[this.name];
+        }
+    }
+    class FunctionNode extends Node {
+        constructor (name, ...args) {
+            super();
+
+            this.name  = name;
+            this.block = args[args.length - 1];
+
+            this.arg_names = [];
+            for (let idx = 0; idx + 1 < args.length; idx ++)
+                this.arg_names.push(args[idx]);
+        }
+        call (...args) {
+            if (this.arg_names.length !== args.length)
+                throw "Invalid argument count";
+            
+            let next_context = {}
+            for (let idx = 0; idx < args.length; idx ++)
+                next_context[this.arg_names[idx]] = args[idx];
+            
+            return this.block.evaluate(next_context);
+        }
+        set (context, value) {
+            throw "Cannot set the value of a FunctionNode";
+        }
+        evaluate (context) {
+            context[this.name] = (...x) => this.call(...x);
+            return context[this.name];
+        }
+    }
+    class IfNode extends Node {
+        constructor (...args) {
+            super();
+
+            this.if_order = [];
+
+            for (let idx = 0; idx < args.length; idx += 2) {
+                let expr  = args[idx];
+                let block = args[idx + 1];
+
+                this.if_order.push([ expr, block ]);
+            }
+
+            this.else = args.length % 2 == 1 ? args[args.length - 1] : undefined;
+        }
+        set (context, value) {
+            throw "Cannot set the value of an IfNode";
+        }
+        evaluate (context) {
+            for (let [ expr, block ] of this.if_order)
+                if (expr.evaluate(context))
+                    return block.evaluate(context);
+
+            if (this.else)
+                return this.else.evaluate(context);
+        }
+    }
+
     _RuleCompiler.config = new ParserConfig()
 
     const DROM_RULE_LIST = [
         _RuleCompiler.compile( "/NAME=if/ /LBRACKET/ EXPR /RBRACKET/ {}"
                              +"[/NAME=else/ /NAME=if/ /LBRACKET/ EXPR /RBRACKET/ {}]*"
-                             +"[/NAME=else/ {}]", "IF"),
+                             +"[/NAME=else/ {}]", "IF")
+            .link((...x) => { return new IfNode(...x) }),
         _RuleCompiler.compile( "/NAME=while/ /LBRACKET/ EXPR /RBRACKET/ {}", "WHILE" ),
-        _RuleCompiler.compile( "/NAME=function/ //NAME/ /LBRACKET/ /RBRACKET/ {}", "FUNCTION" ),
-        _RuleCompiler.compile( "/NAME=import/ //NAME/ [/DOT/ //NAME/]*", "IMPORT" ),
+        _RuleCompiler.compile( "/NAME=function/ //NAME/ /LBRACKET/ [//NAME/ [/COMMA/ //NAME/]*] /RBRACKET/ {}", "FUNCTION" )
+            .link((...x) => { return new FunctionNode(...x) }),
+        _RuleCompiler.compile( "/NAME=import/ //NAME/ [/DOT/ //NAME/]*", "IMPORT" )
+            .link((...x) => { return new ImportNode(...x) }),
         _RuleCompiler.compile( "EXPR", "EXPRESSION" ).link((x) => x)
     ]
 
@@ -1026,31 +1331,12 @@ const Dromadaire = ( function () {
         }
         return cursor.arguments[0]
     }
+    function execute (block, modules) {
+        context = { log: console.log, error: console.error, __modules__: modules }
 
-    class Node extends PositionBased {
-        evaluate (context) {
-            throw "Abstract Node does not have any evaluation function"
-        }
-    }
-    class OperatorNode extends Node {
-        constructor (left, right, operand) {
-            super();
-            this.left    = left;
-            this.transferPosition(this.left);
-
-            this.right   = right;
-            this.size    = this.right.idx + this.right.size - this.left.idx;
-            this.operand = operand;
-        }
-    }
-    class ConstantNode extends Node {
-        constructor (value) {
-            super()
-            this.value = value;
-        }
-        evaluate (context) { return this.value; }
+        block.evaluate(context);
     }
 
-    return { File, Lexer, RuleCompiler, TokenTypes: TOKEN_TYPES, compile , TokenTypesById : TOKEN_TYPE_BY_ID}
+    return { File, Lexer, RuleCompiler, TokenTypes: TOKEN_TYPES, compile, execute, TokenTypesById : TOKEN_TYPE_BY_ID}
 } )();
 

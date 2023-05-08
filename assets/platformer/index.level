@@ -1,49 +1,96 @@
 {
-    "scripts": [ "index.dmd" ],
-    "gravity": 5,
-    "controllers": [
-        {
-            "modes": ["edit", "grid"],
-            "type": "plane", "sx": 4, "sy": 4,
-            "override": { "z": 0 }
-        },{
-            "modes": ["play"],
-            "type": "plane", "sx": 4, "sy": 4,
-            "override": { "z": 0, "y": 6 }
-        }
-    ],
-    "instances": [
-        {
-            "type": "mesh",
-            "name": "Background", 
-            "position": { "x": 0, "y": 0, "z" : -10 }, 
-            "rotation": { "x": 0, "y": 0, "z" : 0 }, 
-            "scale"   : { "x": 1000, "y": 1000, "z" : 1 },
-            "mesh"    : "index.mesh",
-            "material": "color.mat",
-
-            "properties": {},
-            "textures"  : {}
-        },
-        {
-            "type": "grid",
-            "pos_z": -7,
-            "name": "Level grid",
-            "target": "index.grid"
-        },
-        {
-            "type": "atlas.mesh",
-            "atlas": "characters.atl",
-            "name": "Character",
-            "use_gravity": true,
-            "use_collisions": true,
-            "position": { "x": 7.5, "y": 6, "z" : -7 },
-            "rotation": { "x": 0, "y": 0, "z" : 0 }, 
-            "scale"   : { "x": 0.25, "y": 0.375, "z" : 1 },
-            "texture_mask": [ 0.25, 0.5, 0.25, 0.75 ],
-            "coordinates" : 1,
-            "attach": ["play"],
-            "exempt_integration": true
-        }
-    ]
+  "gravity": 5,
+  "scripts": [
+    "index.dmd"
+  ],
+  "controllers": [
+    {
+      "modes": [
+        "edit",
+        "grid"
+      ],
+      "type": "plane",
+      "sx": 4,
+      "sy": 4,
+      "override": {
+        "z": 0
+      }
+    },
+    {
+      "modes": [
+        "play"
+      ],
+      "type": "plane",
+      "sx": 4,
+      "sy": 4,
+      "override": {
+        "z": 0,
+        "y": 6
+      }
+    }
+  ],
+  "instances": [
+    {
+      "type": "mesh",
+      "name": "Background",
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": -10
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1000,
+        "y": 1000,
+        "z": 1
+      },
+      "mesh": "index.mesh",
+      "material": "color.mat",
+      "textures": {},
+      "properties": {}
+    },
+    {
+      "type": "grid",
+      "name": "Level grid",
+      "pos_z": -7,
+      "target": "index.grid"
+    },
+    {
+      "type": "atlas.mesh",
+      "name": "Character",
+      "position": {
+        "x": 7.5,
+        "y": 6,
+        "z": -7
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 0.25,
+        "y": 0.375,
+        "z": 1
+      },
+      "exempt_integration": true,
+      "use_collisions": true,
+      "use_gravity": true,
+      "attach": [
+        "play"
+      ],
+      "atlas": "characters.atl",
+      "coordinates": 1,
+      "texture_mask": [
+        0.25,
+        0.5,
+        0.25,
+        0.75
+      ]
+    }
+  ]
 }

@@ -38,6 +38,13 @@ class WebGLCanvas extends Component {
                 .onkeyend(this.camera, event.key, this.keys);
         })
         document.addEventListener("keydown", (event) => {
+            if (event.key === 's' && event.ctrlKey
+             && this.canvas.checkVisibility()) {
+                this.level.save_file();
+                event.preventDefault();
+                return ;
+            }
+
             if (!this.canvas.classList.contains("active")
              || !this.canvas.checkVisibility()) return ;
             if (this.keys[event.key]) return ;

@@ -72,6 +72,7 @@ class AtlasTexture extends Texture {
         super(web_gl, undefined, url);
 
         this.atlas = [];
+        this.atlas_url = url;
 
         let promise = new Promise((rs, rj) => {
             this.resolve = rs;
