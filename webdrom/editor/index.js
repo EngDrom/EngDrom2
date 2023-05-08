@@ -180,18 +180,14 @@ class TextEditor extends ProjectPage{
     }
 
     _first_render () {
-        let tree2 = new MExplorer (this, { "text": "Explorer", "components": [
-            { "text": "Project", "component": (parent) => new FileTree(parent).render(), "icons": []  }
-        ] });
-
-        let tabs = createElement("div", {}, "h-8 w-full flex",[
-            new Onglet().render(),
-            new Onglet().render()
-        ])
-
-        let config=undefined;
-
-        let texteditor = createElement("div",{},"w-full min-h-8 bg-Vwebdrom-background p-4 absolute top-8 right-0 z-10 select-none text-base opacity-.5",[])
+        this.name=undefined;
+        function treeclick(e,node,path){
+            console.log(path);
+            fetch('/api/fs/read/'+path)
+                .then(response => response.text())
+                .then(text => newonglet(text,path))
+        }
+        this.texteditor = createElement("div",{},"w-full min-h-8 p-4 absolute top-8 right-0 z-10 select-none text-base",[])
         function createTextArea (value) {
             let area   = createElement("textarea", {}, "w-full bg-Vwebdrom-background p-4 text-white absolute top-8 right-0", []);
             area.value = value  
@@ -207,37 +203,69 @@ class TextEditor extends ProjectPage{
             return area
           }
           
-        let textarea=createTextArea("")
-        textarea.addEventListener("keydown",(e) => {
+        this.textarea=createTextArea("")
+
+        let tree2 = new MExplorer (this, { "text": "Explorer", "components": [
+            { "text": "Project", "component": (parent) => new FileTree(parent,treeclick).render(), "icons": []  }
+        ] });
+
+        let config={
+            "name" : "New File",
+            "content" : ""
+        }
+
+        this.tabs = createElement("div", {}, "h-8 w-full flex",[
+            new Onglet(this,config).render(),
+        ])
+        const newonglet = (text,path) => {
+            this.tabs.appendChild(new Onglet(this,{"name":path,"content":text}).render())
+        }
+
+        this.textarea.addEventListener("keydown",(e) => {
+
+            if (e.ctrlKey && e.key === 's') {
+                if(this.name != undefined){
+                const response = fetch("/api/fs/save/"+this.name, {
+                    method: 'PUT',
+                    headers: {
+                      'Content-length' : this.textarea.value.length
+                    },
+                    body: this.textarea.value
+                  });
+                }
+                e.preventDefault()
+                console.log("salut")
+                return;
+            }
             //console.log(e,textarea.value)
             if (e.key == 'Tab') {
                 e.preventDefault();
-                var start = textarea.selectionStart;
-                var end = textarea.selectionEnd;
+                var start = this.textarea.selectionStart;
+                var end = this.textarea.selectionEnd;
             
-                // set textarea value to: text before caret + tab + text after caret
-                textarea.value = textarea.value.substring(0, start) +
-                  "    " + textarea.value.substring(end);
+                // set this.textarea value to: text before caret + tab + text after caret
+                this.textarea.value = this.textarea.value.substring(0, start) +
+                  "    " + this.textarea.value.substring(end);
             
                 // put caret at right position again
-                textarea.selectionStart =
-                  textarea.selectionEnd = start + 4;
+                this.textarea.selectionStart =
+                  this.textarea.selectionEnd = start + 4;
             }
-            if(e.key=="Backspace" && texteditor.innerHTML.substr(-8)=="<br><br>"){
+            if(e.key=="Backspace" && this.texteditor.innerHTML.substr(-8)=="<br><br>"){
                 //alert("remove line")
-                texteditor.innerHTML=texteditor.innerHTML.substr(0,texteditor.innerHTML.length-4)
-                //console.log(texteditor.innerHTML)
+                this.texteditor.innerHTML=this.texteditor.innerHTML.substr(0,this.texteditor.innerHTML.length-4)
+                //console.log(this.texteditor.innerHTML)
             }
             //e.preventDefault();
             //console.log("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=+}{[]()-_:;., ".search(e.key))
             /*if("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=\+}{[]()-_:;.,/ \n".search(e.key) >=0){
-            textarea.value += e.key
+            this.textarea.value += e.key
             }*/
             setTimeout(() => {
-                let line_number = textarea.value.substr(0, textarea.selectionStart).split("\n").length
+                let line_number = this.textarea.value.substr(0, this.textarea.selectionStart).split("\n").length
                 let pos = 0;
                 for(let i=0;i<line_number;i++){
-                    pos+=4+texteditor.innerHTML.split("<br>")[i].length
+                    pos+=4+this.texteditor.innerHTML.split("<br>")[i].length
                 }
                 /*if(line_number>0){
                     pos-=4
@@ -247,22 +275,22 @@ class TextEditor extends ProjectPage{
                 if(pos>4 && e.key != "Enter"){
                     pos0=pos-5
                 }
-                //console.log(textarea.value)
-                //console.log(texteditor.innerHTML)
+                //console.log(this.textarea.value)
+                //console.log(this.texteditor.innerHTML)
                 //console.log(pos0)
-                while(texteditor.innerHTML.substr(pos0,4)!="<br>" && pos0!=0){
-                    //console.log(texteditor.innerHTML.substr(pos0,pos0+4))
+                while(this.texteditor.innerHTML.substr(pos0,4)!="<br>" && pos0!=0){
+                    //console.log(this.texteditor.innerHTML.substr(pos0,pos0+4))
                     pos0--;
                 }
                 pos0+=4
                 let fin=pos-4;
                 //console.log(pos0)
-                while(texteditor.innerHTML.substr(fin,4)!="<br>" && fin<texteditor.innerHTML.length){
+                while(this.texteditor.innerHTML.substr(fin,4)!="<br>" && fin<this.texteditor.innerHTML.length){
                     fin++;
                 }
                 //fin+=4
                 //console.log(fin)
-                let line = textarea.value.split("\n")[line_number-1]
+                let line = this.textarea.value.split("\n")[line_number-1]
                 let lexer = new Dromadaire.Lexer(new Dromadaire.File(line,"index.dmd")).build()[0]
                 let color={
                     1:"#ff0000",
@@ -270,8 +298,8 @@ class TextEditor extends ProjectPage{
                     3:"#0000ff",
                     4:"#ffff00"
                 }
-                let content=texteditor.innerHTML
-                texteditor.innerHTML=content.substring(0,pos0)
+                let content=this.texteditor.innerHTML
+                this.texteditor.innerHTML=content.substring(0,pos0)
                 let j=0
                 let col=lexer[0].col
                 let max=col+lexer[0].size
@@ -282,33 +310,33 @@ class TextEditor extends ProjectPage{
                     col=lexer[j].col
                     max=col+lexer[j].size
                     /*if(lexer[j].__type==17){
-                        texteditor.innerHTML+="<br>"
+                        this.texteditor.innerHTML+="<br>"
                     }*/
                     //else{
                     if(col<=i<max){
                         if(line[i-1]==" "){
-                        texteditor.innerHTML+="<span style='display:inline-block;line-height:20px;min-width:4.5px;color:"+color[lexer[j].__type]+"'>"+line[i-1]+"</span>"
+                        this.texteditor.innerHTML+="<span style='display:inline-block;line-height:20px;min-width:4.5px;color:"+color[lexer[j].__type]+"'>"+line[i-1]+"</span>"
                         }
                         else{
-                            texteditor.innerHTML+="<span style='display:inline-block;line-height:20px;color:"+color[lexer[j].__type]+"'>"+line[i-1]+"</span>"
+                            this.texteditor.innerHTML+="<span style='display:inline-block;line-height:20px;color:"+color[lexer[j].__type]+"'>"+line[i-1]+"</span>"
                         }
                     }
                     else{
                         if(line[i-1]==" "){
-                            texteditor.innerHTML+="<span style='display:inline-block;min-width:4.5px;line-height:20px;color:#ffffff'>"+line[i-1]+"</span>"
+                            this.texteditor.innerHTML+="<span style='display:inline-block;min-width:4.5px;line-height:20px;color:#ffffff'>"+line[i-1]+"</span>"
                             }
                             else{
-                                texteditor.innerHTML+="<span style='display:inline-block;line-height:20px;color:#ffffff'>"+line[i-1]+"</span>"
+                                this.texteditor.innerHTML+="<span style='display:inline-block;line-height:20px;color:#ffffff'>"+line[i-1]+"</span>"
                             }
                     }
                 //}
                 }
-                //console.log(texteditor.innerHTML)
-                if(texteditor.innerHTML.length!=0){
-                texteditor.innerHTML+="<br>"+content.substring(fin+4);
+                //console.log(this.texteditor.innerHTML)
+                if(this.texteditor.innerHTML.length!=0){
+                this.texteditor.innerHTML+="<br>"+content.substring(fin+4);
                 }
                 else{
-                    texteditor.innerHTML+=content.substring(fin+4);
+                    this.texteditor.innerHTML+=content.substring(fin+4);
                 }
                 //console.log(lexer)
 
@@ -317,9 +345,9 @@ class TextEditor extends ProjectPage{
         
  
         let onglets= createElement("div", {}, "w-full h-full relative", [
-            tabs,
-            texteditor,
-            textarea
+            this.tabs,
+            this.texteditor,
+            this.textarea
         ])
 
         let ongletssplitter = new MSplitter (this, "horizontal", undefined, true,
@@ -340,6 +368,60 @@ class TextEditor extends ProjectPage{
             onglets_view
         ])
         //file_tree
+    }
+    reload(){
+        this.textarea.style.height = "5px";
+        this.textarea.style.height = (this.textarea.scrollHeight + 30) + "px";
+        this.texteditor.innerHTML=""
+        let line = this.textarea.value.split("\n")
+        
+        let color={
+            1:"#ff0000",
+            2:"#00ff00",
+            3:"#0000ff",
+            4:"#ffff00"
+        }
+        for(let k=0;k<line.length;k++){
+            let ligne=line[k]
+            let lexer=new Dromadaire.Lexer(new Dromadaire.File(ligne,"index.dmd")).build()[0];
+            let j=0
+            let col=lexer[0].col
+            let max=col+lexer[0].size
+            for(let i=1;i<=ligne.length;i++){
+                if(i>=max){
+                    j++
+                }
+                col=lexer[j].col
+                max=col+lexer[j].size
+                /*if(lexer[j].__type==17){
+                    this.texteditor.innerHTML+="<br>"
+                }*/
+                //else{
+                if(col<=i<max){
+                    if(ligne[i-1]==" "){
+                    this.texteditor.innerHTML+="<span style='display:inline-block;line-height:20px;min-width:4.5px;color:"+color[lexer[j].__type]+"'>"+ligne[i-1]+"</span>"
+                    }
+                    else{
+                        this.texteditor.innerHTML+="<span style='display:inline-block;line-height:20px;color:"+color[lexer[j].__type]+"'>"+ligne[i-1]+"</span>"
+                    }
+                }
+                else{
+                    if(ligne[i-1]==" "){
+                        this.texteditor.innerHTML+="<span style='display:inline-block;min-width:4.5px;line-height:20px;color:#ffffff'>"+ligne[i-1]+"</span>"
+                        }
+                        else{
+                            this.texteditor.innerHTML+="<span style='display:inline-block;line-height:20px;color:#ffffff'>"+ligne[i-1]+"</span>"
+                        }
+                }
+            //}
+            }
+            this.texteditor.innerHTML+="<br>"
+        }
+        //this.texteditor.innerHTML+="<br>"
+        if(this.texteditor.innerHTML=="<br>"){
+            this.texteditor.innerHTML=""
+        }
+
     }
     _render () {
         return this.element;

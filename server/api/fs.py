@@ -31,3 +31,10 @@ class FileSystemApi(API):
         data = self.compute_hierarchy(self.folder, True)
 
         return 200, bytes(json.dumps( data ), encoding="utf-8"), "application/json"
+
+class FileSystemSaveApi(API):
+    def valid(self,path):
+        return path.startswith("/api/fs/save/")
+
+    def handle_api (self,path,content):
+        return API.save_file_data(content, path[13:], self.folder)

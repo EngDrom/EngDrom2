@@ -42,6 +42,18 @@ class API:
 
         return text
     @staticmethod
+    def save_file_data (content, file, root_path):
+        print("salut")
+        return 201, API.save_file( content, file, root_path ), API.get_content_type(file)
+    @staticmethod
+    def save_file (content, file, root_path):
+        file_path = os.path.join( root_path, file )
+
+        with open( file_path, 'w' ) as file:
+            file.write(content.decode("utf-8"))
+
+        return bytes("Saved",encoding="utf-8")
+    @staticmethod
     def get_content_type (file):
         root, ext = os.path.splitext( file )
         

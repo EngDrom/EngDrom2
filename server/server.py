@@ -54,7 +54,24 @@ class WebDromServer(BaseHTTPRequestHandler):
         self.send_header('Content-type', extension)
         self.end_headers()
         self.wfile.write(text)
+    
+    def do_PUT(self):
 
+        status, text, extension = 404, bytes(f"Could not find route {self.path}", encoding="utf-8"), "text/html"
+
+        try:
+            for api_object in API.classes(self):
+                if api_object.valid(self.path):
+                    file_length = int(self.headers['Content-Length'])
+                    status, text, extension = api_object.handle_api(self.path,self.rfile.read(file_length))
+                    break
+        except Exception as e:
+            status, text = 500, bytes(str(e), encoding="utf-8")
+
+        self.send_response(status)
+        self.send_header('Content-type', extension)
+        self.end_headers()
+        self.wfile.write(text)
 
 def create_server (folder, hostName="localhost", serverPort=8542):
     webServer = HTTPServer((hostName, serverPort), WebDromServer( folder ))

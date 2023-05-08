@@ -358,6 +358,8 @@ textarea{
     line-height: 150%;
     overflow: hidden;
     min-height: 50px;
+    color:transparent !important;
+    caret-color: white;
 }
 
 input::-webkit-outer-spin-button,
