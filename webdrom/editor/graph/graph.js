@@ -89,7 +89,8 @@ class MGraph extends Component {
 
         fetch('/api/fs/read/' + file_path).then((body) => body.json().then((json) => {
             let library = undefined;
-            if (file_path.endsWith(".mat")) library = MATERIAL_CATEGORY.library
+            if (file_path.endsWith(".mat" )) library = MATERIAL_CATEGORY.library
+            if (file_path.endsWith(".anim")) library = ANIMATION_CATEGORY.library;
 
             if (library === undefined) {
                 MGRAPH_ARRAYS[this.file_path] = undefined;

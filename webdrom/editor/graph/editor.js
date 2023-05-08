@@ -87,6 +87,7 @@ class GraphOngletManager extends Component {
         let name = path[path.length - 1];
         let icon = "description";
         if (file_path.endsWith(".mat")) icon = "insights";
+        if (file_path.endsWith(".anim")) icon = "movie";
 
         let onglet = new GraphOnglet( this, name, file_path, icon, { graph: mgraph });
         this.onglets.add(onglet);
