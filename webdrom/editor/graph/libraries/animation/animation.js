@@ -14,8 +14,8 @@ const ANIMATION_CATEGORY = (function () {
         [ new MGraph_VectorSpace([ path_type]) ]
     );
 
-    function d_next (target, node) {
-        let output = node.outputs[0];
+    function d_next (target, node, index = 0) {
+        let output = node.outputs[index];
         for (let x of output.childs)
             return x.node;
     }
@@ -48,9 +48,20 @@ const ANIMATION_CATEGORY = (function () {
     )
     .modify("next", d_next);
 
+    let check_dx = new MGraph_Function(
+        "Horizontal Speed", vector_space_PATH, new MGraph_VariantVectorSpace(
+            [ "dx = 0", "dx != 0" ],
+            [ new MGraph_VectorSpace( [ path_type, path_type ] ) ]
+        )
+    ).modify("next", (target, node) => {
+        let dx = target.target.sri.position.spe.x + target.target.sri.position.ssp.x;
+
+        return d_next(target, node, dx == 0 ? 0 : 1);
+    })
+
     let root_category = new MGraph_Category( "root", 
         [], 
-        [ begin_animation, atlas_texture_animation, wait_animation, multiplexer ]
+        [ begin_animation, atlas_texture_animation, wait_animation, multiplexer, check_dx ]
     );
 
     return {
