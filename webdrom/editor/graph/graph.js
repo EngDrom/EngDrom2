@@ -63,9 +63,14 @@ const GRAPH_BACKGROUND_TILING = 45;
 /**
  * Molyb Graph-Based Editor
  */
+
+const MGRAPH_ARRAYS = {}
+
 class MGraph extends Component {
-    constructor (parent, serialized = undefined) {
+    constructor (parent, file_path) {
         super(parent);
+        if (MGRAPH_ARRAYS[file_path]) return MGRAPH_ARRAYS[file_path]
+        MGRAPH_ARRAYS[file_path] = this;
 
         this.editor = parent;
 
@@ -79,10 +84,51 @@ class MGraph extends Component {
 
         this._first_render();
 
-        if (serialized === undefined) 
-            serialized = [{"node":0,"library":"Vertex Input","parameters":[],"pos":{"x":149,"y":197},"inputs":[],"outputs":[{"parent":-1,"childs":[{"node_id":8,"vect_id":0}]},{"parent":-1,"childs":[{"node_id":1,"vect_id":1}]}]},{"node":1,"library":"Vertex Output","parameters":[],"pos":{"x":2133,"y":187},"inputs":[{"parent":{"node_id":13,"vect_id":0},"childs":[]},{"parent":{"node_id":0,"vect_id":1},"childs":[]}],"outputs":[]},{"node":2,"library":"Fragment Input","parameters":[],"pos":{"x":143,"y":328},"inputs":[],"outputs":[{"parent":-1,"childs":[]},{"parent":-1,"childs":[]}]},{"node":3,"library":"4D Vector","parameters":[{"const_x":1,"const_y":0,"const_z":0,"const_w":1}],"pos":{"x":493,"y":329},"inputs":[],"outputs":[{"parent":-1,"childs":[{"node_id":5,"vect_id":0}]}]},{"node":4,"library":"Fragment Output","parameters":[],"pos":{"x":855,"y":335},"inputs":[{"parent":{"node_id":6,"vect_id":0},"childs":[]}],"outputs":[]},{"node":5,"library":"Decompose 4D Vector","parameters":[],"pos":{"x":467,"y":463},"inputs":[{"parent":{"node_id":3,"vect_id":0},"childs":[]}],"outputs":[{"parent":-1,"childs":[{"node_id":6,"vect_id":0}]},{"parent":-1,"childs":[{"node_id":6,"vect_id":1}]},{"parent":-1,"childs":[{"node_id":6,"vect_id":2}]},{"parent":-1,"childs":[{"node_id":6,"vect_id":3}]}]},{"node":6,"library":"Compose 4D Vector","parameters":[],"pos":{"x":800,"y":466},"inputs":[{"parent":{"node_id":5,"vect_id":0},"childs":[]},{"parent":{"node_id":5,"vect_id":1},"childs":[]},{"parent":{"node_id":5,"vect_id":2},"childs":[]},{"parent":{"node_id":5,"vect_id":3},"childs":[]}],"outputs":[{"parent":-1,"childs":[{"node_id":4,"vect_id":0}]}]},{"node":7,"library":"Uniform 4D Matrix","parameters":["mModel"],"pos":{"x":789,"y":-124},"inputs":[],"outputs":[{"parent":-1,"childs":[{"node_id":11,"vect_id":0}]}]},{"node":8,"library":"Decompose 3D Vector","parameters":[],"pos":{"x":463,"y":-20},"inputs":[{"parent":{"node_id":0,"vect_id":0},"childs":[]}],"outputs":[{"parent":-1,"childs":[{"node_id":9,"vect_id":0}]},{"parent":-1,"childs":[{"node_id":9,"vect_id":1}]},{"parent":-1,"childs":[{"node_id":9,"vect_id":2}]}]},{"node":9,"library":"Compose 4D Vector","parameters":[],"pos":{"x":788,"y":-20},"inputs":[{"parent":{"node_id":8,"vect_id":0},"childs":[]},{"parent":{"node_id":8,"vect_id":1},"childs":[]},{"parent":{"node_id":8,"vect_id":2},"childs":[]},{"parent":{"node_id":10,"vect_id":0},"childs":[]}],"outputs":[{"parent":-1,"childs":[{"node_id":11,"vect_id":1}]}]},{"node":10,"library":"Scalar","parameters":[{"const_x":1}],"pos":{"x":464,"y":130},"inputs":[],"outputs":[{"parent":-1,"childs":[{"node_id":9,"vect_id":3}]}]},{"node":11,"library":"Matrix-Vector Multiplication","parameters":[],"pos":{"x":1110,"y":-21},"inputs":[{"parent":{"node_id":7,"vect_id":0},"childs":[]},{"parent":{"node_id":9,"vect_id":0},"childs":[]}],"outputs":[{"parent":-1,"childs":[{"node_id":13,"vect_id":1}]}]},{"node":12,"library":"Uniform 4D Matrix","parameters":["mProj"],"pos":{"x":1433,"y":-128},"inputs":[],"outputs":[{"parent":-1,"childs":[{"node_id":13,"vect_id":0}]}]},{"node":13,"library":"Matrix-Vector Multiplication","parameters":[],"pos":{"x":1759,"y":-23},"inputs":[{"parent":{"node_id":12,"vect_id":0},"childs":[]},{"parent":{"node_id":11,"vect_id":0},"childs":[]}],"outputs":[{"parent":-1,"childs":[{"node_id":1,"vect_id":0}]}]}]
-        if (serialized)
-            this.deserialize(serialized, MATERIAL_CATEGORY.library);
+        this.file_path = file_path
+        if (!file_path) return this;
+
+        fetch('/api/fs/read/' + file_path).then((body) => body.json().then((json) => {
+            let library = undefined;
+            if (file_path.endsWith(".mat")) library = MATERIAL_CATEGORY.library
+
+            if (library === undefined) {
+                MGRAPH_ARRAYS[this.file_path] = undefined;
+
+                this.file_path = undefined;
+                throw 'Library could not be found'
+            }
+
+            this.deserialize(json, library);
+        }))
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === 's' && event.ctrlKey
+             && this.rel_element.checkVisibility()) {
+                this.save_file();
+                event.preventDefault();
+                return ;
+            }
+        })
+    }
+    save_file () {
+        if (this.file_path === undefined) return ;
+        let json = this.serialize()
+
+        let text = JSON.stringify(json)
+
+        fetch("/api/fs/save/"+this.file_path, {
+            method: 'PUT',
+            headers: {
+              'Content-length' : text.length
+            },
+            body: text
+          }).then((body) => {
+            if (body.status === 201 || body.status === 200) {
+                this.library.update(this);
+                return ;
+            }
+            this.parent.engine.project.alert_manager.addAlert([ "danger", "Could not save file, Status code " + body.status ])
+          });
     }
     ressource_hover (res) {
         this.current_ressource = res;
@@ -163,7 +209,7 @@ class MGraph extends Component {
             let summon_x = (event.clientX - this.rel_element.getBoundingClientRect().left ) * this.scale;
             let summon_y = (event.clientY - this.rel_element.getBoundingClientRect().top  ) * this.scale;
             
-            let el = new SearchableContextMenu(undefined, MATERIAL_CATEGORY.library.as_ctxmenu_config((node) => {
+            let el = new SearchableContextMenu(undefined, this.library.as_ctxmenu_config((node) => {
                 let r_node = node.as_node(this, this, summon_x - this.ix, summon_y - this.iy);
                 r_node.setBackground(this.ix, this.iy)
                 
@@ -196,6 +242,8 @@ class MGraph extends Component {
         return result;
     }
     deserialize (json, library) {
+        this.library = library;
+
         for (let json_node of json) {
             let library_function = library.get(json_node.library);
 

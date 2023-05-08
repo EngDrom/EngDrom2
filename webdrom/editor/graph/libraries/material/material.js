@@ -270,7 +270,12 @@ const MATERIAL_CATEGORY = (function () {
             fragment_input,
             fragment_output
         },
-        library: new MGraph_Library(root_category)
+        library: new MGraph_Library(root_category, (mgraph) => {
+            let material = MATERIAL_ARRAY[mgraph.file_path]
+            if (material === undefined) return ;
+
+            material.update(mgraph.nodes);
+        })
     }
 })();
 

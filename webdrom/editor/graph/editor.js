@@ -14,7 +14,7 @@ class GraphEditor extends Component {
         this.properties_manager.set_target(node);
     }
     _first_render () {
-        this.graph = new MGraph(this);
+        this.graph = new MGraph(this, "color.mat");
 
         let tree = new MExplorer (this, { "text": "Explorer", "components": [
             { "text": "Project", "component": (parent) => new FileTree(parent).render(), "icons": []  },

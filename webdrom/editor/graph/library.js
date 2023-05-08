@@ -161,8 +161,13 @@ class MGraph_Category {
     }
 }
 class MGraph_Library {
-    constructor (root_category) {
+    constructor (root_category, update_function) {
         this.category = root_category;
+
+        this.update_function = update_function
+    }
+    update (mgraph) {
+        this.update_function(mgraph);
     }
     as_ctxmenu_config (callback) {
         return this.category.as_ctxmenu_config(callback).childs;
