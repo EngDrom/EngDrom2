@@ -71,7 +71,7 @@ class GridEngineMode extends EditEngineMode {
             )
         ) return undefined;
         
-        let grid = this.current_potential_layer.grid instanceof GridLayer
+        let grid = this.current_potential_layer instanceof GridLayer
                  ? this.current_potential_layer.grid : this.current_potential_layer;
         return new AtlasPicker(this.engine.canvas.fillable_component, grid.atlas).render();
     }
