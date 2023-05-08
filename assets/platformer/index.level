@@ -83,6 +83,7 @@
       "attach": [
         "play"
       ],
+      "animation": "characters.anim",
       "atlas": "characters.atl",
       "coordinates": 1,
       "texture_mask": [

@@ -60,6 +60,10 @@ class Level {
                         );
                     inst[3].attach = mesh.attach
                 }
+                if (mesh.animation) {
+                    this.animations.push(new Animation( mesh.animation, inst [2] ));
+                    inst[3].animation = mesh.animation
+                }
 
                 this.instances.push(inst);
             }
@@ -100,6 +104,8 @@ class Level {
                 instance_json.use_gravity = true;
             if (options.attach)
                 instance_json.attach = options.attach
+            if (options.animation)
+                instance_json.animation = options.animation
             
             if (type === "atlas.mesh") {
                 instance_json.atlas = options.atlas
@@ -193,8 +199,6 @@ class Level {
         let atlas     = new AtlasTexture(this.context, json.atlas);
         let instance  = new TextureAtlasMeshInstance(this.context, undefined, transform, atlas);
         let options   = { atlas: json.atlas }
-
-        this.animations.push(new Animation( "characters.anim", instance ));
 
         atlas.wait().then(() => {
             if (json.texture_mask)
