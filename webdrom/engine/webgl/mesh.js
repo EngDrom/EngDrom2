@@ -107,14 +107,14 @@ class MeshInstance {
         this.world = world;
     }
 
-    render (shader, camera) {
+    render (shader, camera, reverse_camera=false) {
         if (this.mesh === undefined) return ;
 
         shader.use();
         shader.prerender();
         shader.mModel  = this.sri.as_transform();
         shader.mProj   = this.context.projection;
-        shader.mCamera = camera.transform();
+        shader.mCamera = camera.transform(reverse_camera);
 
         for (let texture_loc in this.textures)
             shader[texture_loc] = this.textures[texture_loc];

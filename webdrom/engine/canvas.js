@@ -18,6 +18,10 @@ class WebGLCanvas extends Component {
         this.canvas = createElement("canvas", { onclick: (ev) => this.onClick(ev) }, "w-full h-full", []);
         this.keys   = {}
 
+        document.addEventListener("WebDrom.MeshInstance.Clicked", (ev) => {
+            this.clicked_mesh_instance = ev.meshInstance;
+        })
+
         document.addEventListener("keyup", (event) => {
             if (!this.keys[event.key]) return ;
             this.keys[event.key] = undefined;
@@ -36,6 +40,7 @@ class WebGLCanvas extends Component {
 
             if (event.key == 'e') this.change_mode( EditEngineMode )
             if (event.key == 'p') this.change_mode( PlayEngineMode )
+            if (event.key == 'g') this.change_mode( GridEngineMode )
         })
         append_drag_listener(new Scalar(1), this.canvas, (dx, dy, ix, iy) => {
             this.mode.get_player_controller()
@@ -107,8 +112,8 @@ class WebGLCanvas extends Component {
             ?.ontick(this.camera, delta_interval)
 
         this.clear();
-        this.mode.onrender();
         this.level.render(this.web_gl.default_shader, this.camera);
+        this.mode.onrender();
     }
 
     _runComputations () {

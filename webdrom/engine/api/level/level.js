@@ -45,7 +45,6 @@ class Level {
 
                 this.instances.push(inst);
             }
-            console.log(this.player_controllers)
             
             this.context.engine.render_level_tree();
         }))

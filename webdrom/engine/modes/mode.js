@@ -4,6 +4,9 @@ class EngineMode {
         this.engine = engine;
     }
 
+    get_context () {
+        return this.engine.canvas.web_gl;
+    }
     get_player_controller (mode = "edit") {
         return this.get_level().player_controllers[mode]
     }
@@ -19,7 +22,7 @@ class EngineMode {
         for (let [ name, type, instance, options ] of level.instances)
             instance.reset();
         
-        this.get_camera().sri = new SRI();
+        this.get_camera().reload();
     }
 
     onbegin () { // change mode
