@@ -69,7 +69,7 @@ class GridLayer_HitBox extends HitBox {
     collide (box) {
         if (!this.layer.collider) return false;
     
-        if (this.chunks.length !== this.layer.chunks.length) {
+        if (this.chunks.length !== this.layer.m_chunks.length) {
             this.chunks = [];
     
             for (let m_chunk of this.layer.m_chunks)

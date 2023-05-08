@@ -61,7 +61,7 @@ class GridEngineMode extends EditEngineMode {
 
         let [bx, by] = this.find_pos(instance, event);
 
-        //instance.setTile(bx, by, type);
+        instance.setTile(bx, by, type);
     }
 
     onclick (event) {
