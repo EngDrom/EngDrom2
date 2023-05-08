@@ -17,6 +17,12 @@ class LevelTree extends Component {
         if (this.cur_config)
             this.cur_config.bubble = undefined;
 
+        if (node === undefined) {
+            this.cur_config = undefined;
+            this.tree._update();
+            return ;
+        }
+        
         this.cur_config = node.config;
         this.cur_config.bubble = {
             "opacity": "20%",
@@ -30,7 +36,7 @@ class LevelTree extends Component {
         document.addEventListener("WebDrom.MeshInstance.Clicked", (event) => {
             let instance = event.meshInstance;
 
-            let node = instance.tree_node
+            let node = instance?.tree_node
             this.onclick(node);
         })
 

@@ -17,7 +17,7 @@ function main (api) {
         }
     }
 
-    api.addFrame(frame)
+    api.onframe(frame)
 }
 
 engdrom.onload(main)

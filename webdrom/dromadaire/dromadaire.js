@@ -1253,7 +1253,6 @@ const Dromadaire = ( function () {
                 this.arg_names.push(args[idx]);
         }
         call (...args) {
-            console.log(args, this.arg_names)
             if (this.arg_names.length !== args.length)
                 throw "Invalid argument count";
             
@@ -1333,7 +1332,7 @@ const Dromadaire = ( function () {
         return cursor.arguments[0]
     }
     function execute (block, modules) {
-        context = { log: console.log, error: console.error }
+        context = { log: console.log, error: console.error, __modules__: modules }
 
         block.evaluate(context);
     }

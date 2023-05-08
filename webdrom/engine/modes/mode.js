@@ -74,6 +74,7 @@ class PlayEngineMode extends EngineMode {
     }
     onbegin () {
         this.cleanup();
+        this.engine.canvas.level.onbegin();
     }
     onlevelbegin () {
         this.cleanup();

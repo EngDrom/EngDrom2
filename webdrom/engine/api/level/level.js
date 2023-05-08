@@ -5,6 +5,9 @@ class Level {
         this.instances = [];
         this.scripts   = [];
 
+        this.drom_scripts   = [];
+        this.engdrom_module = new EngDromModule();
+
         this.world = new RiceWorld();
 
         this.gravity = 0;
@@ -17,6 +20,8 @@ class Level {
             // TODO use scripts
             this.scripts = json.scripts;
             this.gravity = json.gravity;
+
+            this.drom_scripts = this.scripts.map((file) => new Script(context, file));
 
             this.controllers_json = json.controllers;
 
@@ -141,6 +146,15 @@ class Level {
           });
     }
 
+    onbegin () {
+        this.engdrom_module.reset();
+        
+        for (let script of this.drom_scripts)
+            script.execute({ engdrom: this.engdrom_module })
+        
+        this.engdrom_module.runload();
+    }
+
     create_mesh (json) {
         if (json.type === "grid") return this.create_grid (json);
         if (json.type === "atlas.mesh")
@@ -203,6 +217,8 @@ class Level {
         for (let [ name, type, instance, options ] of this.instances)
             if (!options.exempt_integration)
                 instance.sri.integrate(delta_t);
+        
+        this.engdrom_module.runframe(this.context.engine.canvas.camera);
     }
 
     render (default_shader, camera) {
