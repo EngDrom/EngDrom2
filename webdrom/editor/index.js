@@ -47,8 +47,11 @@ class HomeProjectPage extends ProjectPage {
 
                 return new FileTree(parent, action).render()
             }, "icons": []  },
-            { "text": "Webdrom", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  },
-            { "text": "Level", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render(), "icons": []  }
+            { "text": "Level", "component": (parent) => {
+                let lt = new LevelTree(parent, this.engine);
+
+                return lt.render();
+            }, "icons": []  }
         ] });
 
         let property_tree = new MExplorer(this, {
@@ -58,13 +61,14 @@ class HomeProjectPage extends ProjectPage {
                 { "text": "Material", "component": (parent) => new MTree(parent, TEST_MTREE_CONFIG).render() },
             ]
         }, false)
-        let config   = undefined
+
+        let fillable_component = new FillableComponent(this);
+        this.engine.canvas.set_fillable_component(fillable_component);
         
         let splitter1 = new MSplitter(this, "vertical", undefined, true, 
             this.engine.render(),
-            createElement("div", {}, "", [])
-        )
-
+            fillable_component.render()
+        );
         let splitter = new MSplitter (this, "horizontal", undefined, true,
             createElement("div", {}, "w-full h-full bg-Vwebdrom-light-background", [
                 tree.render()
@@ -98,7 +102,7 @@ class HomeProjectPage extends ProjectPage {
 class ProjectComponent extends Component {
     constructor (parent, project_page, engine) {
         super(parent);
-        this.engine = new WebEngine(this.component);
+        this.engine = engine;
 
         this.project_pages = {  }
     
@@ -153,7 +157,7 @@ class Project {
         this.body = body;
 
         this.page = page;
-        this.component = new ProjectComponent(undefined, page);
+        this.component = new ProjectComponent(undefined, page, new WebEngine(this.component, this));
         this.component.is_dom_root = true;
         this.component.dom_body = this.body;
         this.contextmenu = new ContextMenu(this);

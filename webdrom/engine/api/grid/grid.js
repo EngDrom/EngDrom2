@@ -11,10 +11,18 @@ class GridChunk extends MeshInstance {
 
         this.textures = grid.textures;
 
+        this.v_count = 0;
+
+        this.computeMesh();
+    }
+    setTile (x, y, t) {
+        this.grid_data[y][x] = t;
+
         this.computeMesh();
     }
 
     computeMesh () {
+        this.v_count = 0;
         let vertices = [];
         let texCoord = [];
         let indices  = [];
@@ -27,6 +35,7 @@ class GridChunk extends MeshInstance {
             for (let py = 0; py < 16; py ++) {
                 let type = this.grid_data[py][px];
                 if (type === -1) continue;
+                this.v_count ++;
 
                 vertices.push([ dx + px     - mu_safe, dy + py     - mu_safe, 0 ]);
                 vertices.push([ dx + px + 1 + mu_safe, dy + py     - mu_safe, 0 ]);
@@ -58,12 +67,14 @@ class GridChunk extends MeshInstance {
         this.sri = this.transform.as_sri(undefined, undefined);
     }
     render (shader, camera) {
-        if (this.mesh === undefined) return ;
+        if (this.mesh === undefined
+         || this.v_count === 0) return ;
 
         super.render(shader, camera);
     }
     renderRTS () {
-        if (this.mesh === undefined) return ;
+        if (this.mesh === undefined
+         || this.v_count === 0) return ;
 
         super.render(shader, camera);
     }
@@ -83,10 +94,48 @@ class GridLayer extends MeshInstance {
         this.dx = config.pos.dx;
         this.dy = config.pos.dy;
 
-        this.chunks = config.chunks;
-        this.m_chunks = this.chunks.map((x) => {
+        this.m_chunks = config.chunks.map((x) => {
             return new GridChunk( context, transform, grid, this, x );
         })
+    }
+    empty_grid_chunk_config (cx, cy) {
+        return {
+            x: cx, y: cy,
+            grid: this.empty_grid_chunk()
+        }
+    }
+    empty_grid_chunk () {
+        let grid = [];
+        for (let x = 0;  x < 16; x ++) {
+            let t = [];
+            for (let y = 0; y < 16; y ++)
+                t.push(-1);
+            grid.push(t);
+        }
+    
+        return grid;
+    }
+
+    setTile (bx, by, tile) {
+        bx -= this.dx; by -= this.dy;
+
+        let cx = Math.floor(bx / 16.0);
+        let cy = Math.floor(by / 16.0);
+
+        let chunk = undefined;
+        for (let m_chunk of this.m_chunks)
+            if (m_chunk.x === cx && m_chunk.y === cy)
+                chunk = m_chunk;
+        
+        if (chunk === undefined) {
+            chunk = new GridChunk( this.context, this.transform, this.grid, this, this.empty_grid_chunk_config(cx, cy) );
+
+            this.m_chunks.push(chunk);
+        }
+        
+        let ux = bx - cx * 16;
+        let uy = by - cy * 16;
+        chunk.setTile(ux % 16, uy % 16, tile);
     }
 
     reset () {
@@ -117,6 +166,8 @@ class GridMesh extends MeshInstance {
                 this.layers.push(
                     new GridLayer(context, transform, this, layer)
                 );
+            
+            context.engine.render_level_tree();
         }));
     }
 

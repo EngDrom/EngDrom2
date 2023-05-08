@@ -22,7 +22,12 @@ class AttachedPlayerController extends PlayerController {
 
         this.controller.onkeyend(camera, key, keys_status);
     }
+    get_override () {
+        return this.controller.get_override();
+    }
     ontick (camera, delta_t) {
+        if (camera instanceof Camera)
+            camera.set_override(this.get_override());
         camera.sri = this.mesh.sri;
 
         this.controller.ontick(camera, delta_t);

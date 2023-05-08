@@ -26,7 +26,12 @@ function create_raytracer_shader (context) {
 class Mesh {
     constructor (context, vao_data, ebo_data) {
         this.context = context;
-        this.vao     = new VAO(context, vao_data)
+
+        this.make(vao_data, ebo_data);
+    }
+    make (vao_data, ebo_data) {
+        if (vao_data === undefined || ebo_data === undefined) return ;
+        this.vao     = new VAO(this.context, vao_data)
 
         let pos_vbo = vao_data[0];
         let box     = [ 1e18, 1e18, 1e18, -1e18, -1e18, -1e18 ];
@@ -41,13 +46,15 @@ class Mesh {
 
         this.box = box;
 
-        this.ebo     = new EBO(context, ebo_data)
+        this.ebo = new EBO(this.context, ebo_data)
     }
 
     render (shader) {
+        if (this.vao === undefined) return ;
         shader.render(this.vao, this.ebo);
     }
     renderRTS (unique_id = 1) {
+        if (this.vao === undefined) return ;
         create_raytracer_shader(this.context);
         
         let r = unique_id % 256;
@@ -65,6 +72,8 @@ class MeshInstance {
         this.context = context;
         this.mesh    = mesh;
 
+        this.gravity = 0;
+
         this.textures = { text: new Texture(context, "preview.png"), text2: new Texture(context, "characters.png") };
 
         this.transform = transform;
@@ -72,18 +81,40 @@ class MeshInstance {
         this.reset();
     }
     reset () {
-        this.sri = this.transform.as_sri(this.world, this.mesh.box);
+        if (this.mesh instanceof SavedMesh) {
+            if (this.sri_await) return ;
+
+            this.sri = this.transform.as_sri(undefined, undefined);
+            this.sri_await = true;
+            this.mesh.await( () => this._reset() );
+        } else this._reset();
+    }
+    _reset () {
+        let old  = this.sri;
+        this.sri = this.transform.as_sri(this.world, this.mesh?.box);
+
+        this.sri.position.acc.y -= this.gravity;
+
+        if (this.sri_await) {
+            this.sri.position = old.position;
+            this.sri.rotation = old.rotation;
+            this.sri.scale    = old.scale;
+
+            this.sri_await = false;
+        }
     }
     use_collisions (world) {
         this.world = world;
     }
 
-    render (shader, camera) {
+    render (shader, camera, reverse_camera=false) {
+        if (this.mesh === undefined) return ;
+
         shader.use();
         shader.prerender();
         shader.mModel  = this.sri.as_transform();
         shader.mProj   = this.context.projection;
-        shader.mCamera = camera.transform();
+        shader.mCamera = camera.transform(reverse_camera);
 
         for (let texture_loc in this.textures)
             shader[texture_loc] = this.textures[texture_loc];
@@ -91,6 +122,8 @@ class MeshInstance {
         this.mesh.render(shader);
     }
     renderRTS (raytracer, camera) {
+        if (this.mesh === undefined) return ;
+        
         create_raytracer_shader(this.context);
 
         this.context.raytracer.use();

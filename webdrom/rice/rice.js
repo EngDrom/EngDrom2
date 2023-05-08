@@ -83,17 +83,25 @@ class PRectBox extends HitBox {
         
         return points;
     }
-}
 
-RICE_HITBOX_ARRAYS.add(PRectBox, PRectBox, (c0, c1) => {
-    // the collision is missing a case where the points are not in the other box
-    // with a vertical and a horizontal box, but this case can only be achieved
-    // by violating at some point the displacement rules so we don't care
-    for (let point of c0.points())
-        if (c1.is_in(...point))
-            return true;
-    for (let point of c1.points())
-        if (c0.is_in(...point))
-            return true;
-    return false;
-})
+    _collide (c1) {
+        // the collision is missing a case where the points are not in the other box
+        // with a vertical and a horizontal box, but this case can only be achieved
+        // by violating at some point the displacement rules so we don't care
+        for (let point of this.points())
+            if (c1.is_in(...point))
+                return true;
+        for (let point of c1.points())
+            if (this.is_in(...point))
+                return true;
+        return false;
+    }
+    collide (other, def=true) {
+        if (other instanceof PRectBox)
+            return this._collide(other)
+        if (other.collide(this, false)) return true;
+        if (def)
+            return super.collide(other)
+        return false;
+    }
+}

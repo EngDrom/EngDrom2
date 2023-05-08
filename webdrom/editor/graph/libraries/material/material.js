@@ -154,7 +154,7 @@ const MATERIAL_CATEGORY = (function () {
             [ new MGraph_VectorSpace( [ vec4 ] ) ]
         ),
         vector_space_EMPTY
-    ).modify("compile", [(type, _var, node, inp) => `gl_FragColor = ${inp[0]};`]);
+    ).modify("compile", [(type, _var, node, inp) => `gl_FragColor = ${inp[0]}; if (gl_FragColor.w <= 0.1) discard;`]);
 
     let decompose2 = new MGraph_Function(
         "Decompose 2D Vector",

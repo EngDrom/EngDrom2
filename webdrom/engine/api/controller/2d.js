@@ -1,8 +1,8 @@
 
 
 class PlanePlayerController extends PlayerController {
-    constructor (sx = 1, sy = 1, options = [ 'l', 'r', 'u', 'd' ]) {
-        super();
+    constructor (override, sx = 1, sy = 1, options = [ 'l', 'r', 'u', 'd' ]) {
+        super(override);
         this.sx = sx;
         this.sy = sy;
 
@@ -36,7 +36,12 @@ class PlanePlayerController extends PlayerController {
         // Do nothing in a 2D Plane
     }
     
+    get_override() {
+        return this.override;
+    }
     ontick (camera, delta_t) {
+        if (camera instanceof Camera)
+            camera.set_override(this.get_override());
         camera.integrate(delta_t);
     }
 }

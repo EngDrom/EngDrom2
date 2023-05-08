@@ -96,7 +96,6 @@ class MaterialGraphCompilation extends GraphCompilation {
         let context_fg = this.make(context.pos_fg_out)
         let context_vt = this.make(context.pos_vt_out)
 
-        console.log(this.render_vertex(context_vt))
-        console.log(this.render_fragment(context_fg))
+        return [ this.render_vertex(context_vt), this.render_fragment(context_fg) ]
     }
 }

@@ -3,19 +3,39 @@ class WebGLCanvas extends Component {
     constructor (parent, engine) {
         super(parent);
 
-        this._first_render();
         this.engine = engine;
+    }
+
+    change_mode (mode) {
+        if (this.mode.constructor === mode) return ;
+
+        this.mode.onend();
+        this.mode = new mode(this.engine);
+        this.mode.onbegin();
+        this.mode.onmeshclicked(this.clicked_mesh_instance);
+        this.fill_component();
     }
 
     _first_render () {
         this.canvas = createElement("canvas", { onclick: (ev) => this.onClick(ev) }, "w-full h-full", []);
+        this.canvas.addEventListener("contextmenu", (event) => {
+            this.mode.oncontextmenu(event);
+        })
         this.keys   = {}
+
+        document.addEventListener("WebDrom.MeshInstance.Clicked", (ev) => {
+            this.clicked_mesh_instance = ev.meshInstance;
+            let needs_fill = this.mode.onmeshclicked(this.clicked_mesh_instance);
+        
+            if (needs_fill) this.fill_component();
+        })
 
         document.addEventListener("keyup", (event) => {
             if (!this.keys[event.key]) return ;
             this.keys[event.key] = undefined;
             
-            this.pc.onkeyend(this.camera, event.key, this.keys);
+            this.mode.get_player_controller()
+                .onkeyend(this.camera, event.key, this.keys);
         })
         document.addEventListener("keydown", (event) => {
             if (!this.canvas.classList.contains("active")
@@ -23,10 +43,16 @@ class WebGLCanvas extends Component {
             if (this.keys[event.key]) return ;
 
             this.keys[event.key] = true;
-            this.pc.onkeystart(this.camera, event.key, this.keys);
+            this.mode.get_player_controller()
+                .onkeystart(this.camera, event.key, this.keys);
+
+            if (event.key == 'e') this.change_mode( EditEngineMode )
+            if (event.key == 'p') this.change_mode( PlayEngineMode )
+            if (event.key == 'g') this.change_mode( GridEngineMode )
         })
         append_drag_listener(new Scalar(1), this.canvas, (dx, dy, ix, iy) => {
-            this.pc.ondrag(this.camera, dx, dy);
+            this.mode.get_player_controller()
+                .ondrag(this.camera, dx, dy);
         })
 
         this.component = createElement("div", {}, "w-full", [
@@ -40,6 +66,17 @@ class WebGLCanvas extends Component {
         this.observer = new ResizeObserver( (event) => this.onResize(event) )
         this.observer.observe(this.canvas);
     }
+    fill_component () {
+        if (this.fillable_component === undefined) return ;
+
+        let comp = this.mode.get_component()
+    
+        this.fillable_component.fill(comp);
+    }
+    set_fillable_component (comp) {
+        this.fillable_component = comp;
+        this.fill_component();
+    }
     make_projection () {
         const fov = 45 * Math.PI / 180;
         const asp = this.canvas.clientWidth / this.canvas.clientHeight;
@@ -49,7 +86,7 @@ class WebGLCanvas extends Component {
         this.web_gl.projection = new PerspectiveTransform(fov, asp, zNr, zFr);
     }
     make_gl () {
-        this.web_gl = new ExtendedWebGLContext(this.canvas.getContext("webgl"))
+        this.web_gl = new ExtendedWebGLContext(this.canvas.getContext("webgl"), this.engine)
         this.make_projection();
 
         this.web_gl.default_shader = this.web_gl.loadProgram(`attribute vec3 aVertexPosition;
@@ -71,52 +108,14 @@ class WebGLCanvas extends Component {
           }`);
         this.web_gl.default_shader.addTarget("aVertexPosition", 0);
         this.web_gl.default_shader.addTarget("aTextCoord", 1);
-        this.shader = this.web_gl.loadProgram(`attribute vec3 aVertexPosition;
-        attribute vec2 aTextCoord;
-        uniform mat4 mModel;
-        uniform mat4 mProj;
-        uniform mat4 mCamera;
-        varying lowp vec2 textCoord;
-        
-        void main(void) {
-          gl_Position = mProj * mCamera * mModel * vec4(aVertexPosition, 1.0);
-          textCoord = aTextCoord;
-        }`, `varying lowp vec2 textCoord;
-        uniform sampler2D text;
-        uniform sampler2D text2;
-        
-        void main(void) {
-            gl_FragColor = texture2D(text, textCoord) * texture2D(text2, textCoord);
-          }`);
-        this.shader.addTarget("aVertexPosition", 0);
-        this.shader.addTarget("aTextCoord", 1);
 
-        const mu_z = -7;
-
-        this.mesh = new Mesh(
-            this.web_gl,
-            [
-                [ [0.5, 0.5, mu_z], [-0.5, 0.5, mu_z], [0.5, -0.5, mu_z], [-0.5, -0.5, mu_z] ],
-                [ [1, 0], [0, 0], [1, 1], [0, 1] ]
-            ],
-            [ 0, 1, 2, 1, 2, 3 ]
-        )
-        this.cube1 = new MeshInstance(this.web_gl, this.mesh, new Transform(8, 7, 0, 0, 0, 0, 1, 1, 1))
-        this.world = new RiceWorld();
-        this.world.append( new PRectBox(-100, - 3, -100, 1000, 1, 1000) )
-        this.cube1.use_collisions(this.world);
-        this.cube1.reset();
-        this.cube1.sri.position.acc.y = - 5;
-
-        this.grid = new GridMesh( this.web_gl, new Transform(0, 0, -7, 0, 0, 0, 1, 1, 1), "index.grid" );
-        this.world.append( new Grid_HitBox(this.grid) );
+        this.level = new Level(this.web_gl, "index.level");
 
         this.camera = new Camera();
 
-        this.pc = new AttachedPlayerController(
-            new PlanePlayerController(4, 4, [ 'l', 'r', 'u' ]),
-            this.cube1
-        );
+        this.mode = new EditEngineMode(this.engine);
+        this.mode.onbegin();
+        this.mode.onmeshclicked(this.clicked_mesh_instance);
     }
     clear () {
         this.web_gl.clearColor(0.0, 0.0, 0.0, 1.0)
@@ -128,11 +127,13 @@ class WebGLCanvas extends Component {
     drawCallback (delta_interval) {
         this._runComputations();
 
-        this.pc.ontick(this.camera, delta_interval / 1000.0)
+        this.mode.ontick(delta_interval)
+        this.mode?.get_player_controller()
+            ?.ontick(this.camera, delta_interval)
 
         this.clear();
-        this.grid .render(this.web_gl.default_shader, this.camera);
-        this.cube1.render(this.shader, this.camera);
+        this.level.render(this.web_gl.default_shader, this.camera);
+        this.mode.onrender();
     }
 
     _runComputations () {
@@ -149,7 +150,7 @@ class WebGLCanvas extends Component {
         this.raytracer = new RayTracer();
         
         this.clear();
-        this.cube1.renderRTS(this.raytracer, this.camera);
+        this.level.renderRTS(this.raytracer, this.camera);
 
         return this.getBuffer();
     }
@@ -207,6 +208,8 @@ class WebGLCanvas extends Component {
         return table;
     }
     onClick (event) {
+        if (!this.mode.onclick(event)) return ;
+
         this.runPixelComputations([ [ event.layerX, event.layerY ] ], (mesh_array) => {
             let mesh_instance = mesh_array[0];    
         
