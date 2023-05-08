@@ -15,6 +15,12 @@ class GridChunk extends MeshInstance {
 
         this.computeMesh();
     }
+    serialize () {
+        return {
+            x: this.x, y: this.y,
+            grid: this.grid_data
+        }
+    }
     setTile (x, y, t) {
         this.grid_data[y][x] = t;
 
@@ -98,6 +104,15 @@ class GridLayer extends MeshInstance {
             return new GridChunk( context, transform, grid, this, x );
         })
     }
+
+    serialize () {
+        return {
+            name: this.name,
+            collider: this.collider,
+            pos : { dx: this.dx, dy: this.dy },
+            chunks: this.m_chunks.map((chunk) => chunk.serialize())
+        }
+    }
     empty_grid_chunk_config (cx, cy) {
         return {
             x: cx, y: cy,
@@ -153,6 +168,7 @@ class GridLayer extends MeshInstance {
 class GridMesh extends MeshInstance {
     constructor (context, transform, url) {
         super(context, undefined, transform);
+        this.file_path = url;
 
         this.layers = [  ];
 
@@ -169,6 +185,31 @@ class GridMesh extends MeshInstance {
             
             context.engine.render_level_tree();
         }));
+    }
+
+    serialize () {
+        let layers = this.layers.map((layer) => layer.serialize());
+
+        return {
+            layers,
+            atlas: this.atlas.atlas_url
+        }
+    }
+    save_file () {
+        let json = this.serialize()
+
+        let text = JSON.stringify(json)
+
+        fetch("/api/fs/save/" + this.file_path, {
+            method: 'PUT',
+            headers: {
+              'Content-length' : text.length
+            },
+            body: text
+          }).then((body) => {
+            if (body.status === 201 || body.status === 200) return ;
+            this.context.engine.project.alert_manager.addAlert([ "danger", "Could not save file, Status code " + body.status ])
+          });
     }
 
     use_collisions (world) {

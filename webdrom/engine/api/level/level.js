@@ -101,6 +101,8 @@ class Level {
                     instance_json.texture_mask = instance.texture_mask
             }
             if (type === "grid") {
+                instance.save_file();
+                
                 let transform = instance.transform
                 instance_json.pos_z  = transform.__z;
                 instance_json.target = options.path;

@@ -63,7 +63,7 @@
       "type": "atlas.mesh",
       "name": "Character",
       "position": {
-        "x": 9.5,
+        "x": 7.5,
         "y": 6,
         "z": -7
       },
