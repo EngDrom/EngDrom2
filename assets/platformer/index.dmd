@@ -6,6 +6,8 @@ function main (engine) {
         y = xyz[1]
         z = xyz[2]
 
+        print(x,y,z)
+
         if (y < 3) {
             controller.mesh.matrix.reset_translation()
             controller.mesh.matrix.translate(9, 6, 0)
