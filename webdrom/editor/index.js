@@ -185,6 +185,7 @@ class TextEditor extends ProjectPage{
 
     _first_render () {
         this.name=undefined;
+        this.line=0;
         function treeclick(e,node,path){
             console.log(path);
             fetch('/api/fs/read/'+path)
@@ -225,6 +226,95 @@ class TextEditor extends ProjectPage{
             this.tabs.appendChild(new Onglet(this,{"name":path,"content":text}).render())
         }
 
+
+        let update_line = (line_number,e) => {
+            let pos = 0;
+            for(let i=0;i<line_number;i++){
+                pos+=4+this.texteditor.innerHTML.split("<br>")[i].length
+            }
+            /*if(line_number>0){
+                pos-=4
+            }*/
+            let pos0=pos;
+            //console.log(pos0)
+            if(pos>4 && e.key != "Enter"){
+                pos0=pos-5
+            }
+            //console.log(this.textarea.value)
+            //console.log(this.texteditor.innerHTML)
+            //console.log(pos0)
+            while(this.texteditor.innerHTML.substr(pos0,4)!="<br>" && pos0!=0){
+                //console.log(this.texteditor.innerHTML.substr(pos0,pos0+4))
+                pos0--;
+            }
+            pos0+=4
+            let fin=pos-4;
+            //console.log(pos0)
+            while(this.texteditor.innerHTML.substr(fin,4)!="<br>" && fin<this.texteditor.innerHTML.length){
+                fin++;
+            }
+            //fin+=4
+            //console.log(fin)
+            let line = this.textarea.value.split("\n")[line_number-1]
+            let lexer = new Dromadaire.Lexer(new Dromadaire.File(line,"index.dmd")).build()[0]
+            let color={
+                1:"#ff0000",
+                2:"#00ff00",
+                3:"#0000ff",
+                4:"#ffff00"
+            }
+            let content=this.texteditor.innerHTML
+            this.texteditor.innerHTML=content.substring(0,pos0)
+            let contenu=""
+            let j=0
+            let col=lexer[0].col
+            let max=col+lexer[0].size
+            let b=false
+            //let b=false
+            for(let i=1;i<=line.length;i++){
+                if(i>=max){
+                    j++
+                }
+                col=lexer[j].col
+                max=col+lexer[j].size
+                /*if(lexer[j].__type==17){
+                    this.texteditor.innerHTML+="<br>"
+                }*/
+                //else{
+                if(i==col){
+                    //console.log("deb")
+                    b=true
+                    contenu+="<span style='display:inline-block;line-height:20px;color:"+color[lexer[j].__type]+"'>"
+                }
+                if(b){
+                    //console.log("add")
+                    contenu+=line[i-1]
+                }
+                else{
+                    if(line[i-1]==" "){
+                        contenu+="<span style='display:inline-block;min-width:4.5px;line-height:20px;color:#ffffff'>"+line[i-1]+"</span>"
+                        }
+                        else{
+                            contenu+="<span style='display:inline-block;line-height:20px;color:#ffffff'>"+line[i-1]+"</span>"
+                        }
+                }
+                if(i==max-1){
+                    b=false
+                    contenu+="</span>"       
+                }
+            //}
+            }
+            //console.log(contenu)
+            if(contenu.length+this.texteditor.innerHTML!=0){
+            this.texteditor.innerHTML+=contenu+"<br>"+content.substring(fin+4);
+            }
+            else{
+                this.texteditor.innerHTML+=contenu+content.substring(fin+4);
+            }
+            //console.log(lexer)
+
+        }
+
         this.textarea.addEventListener("keydown",(e) => {
 
             if (e.ctrlKey && e.key === 's') {
@@ -260,93 +350,22 @@ class TextEditor extends ProjectPage{
                 this.texteditor.innerHTML=this.texteditor.innerHTML.substr(0,this.texteditor.innerHTML.length-4)
                 //console.log(this.texteditor.innerHTML)
             }
+            setTimeout(() => {let line_number = this.textarea.value.substr(0, this.textarea.selectionStart).split("\n").length
+            //console.log(this.textarea.value.split("\n").length,this.line)
+            if((this.line!=this.textarea.value.split("\n").length) && this.textarea.value.split("\n").length!=line_number){
+                //console.log("bouh")
+                this.reload()
+            }
+            else{
+                update_line(line_number,e)
+            }
+            this.line=this.textarea.value.split("\n").length},0)
             //e.preventDefault();
             //console.log("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=+}{[]()-_:;., ".search(e.key))
             /*if("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890=\+}{[]()-_:;.,/ \n".search(e.key) >=0){
             this.textarea.value += e.key
             }*/
-            setTimeout(() => {
-                let line_number = this.textarea.value.substr(0, this.textarea.selectionStart).split("\n").length
-                let pos = 0;
-                for(let i=0;i<line_number;i++){
-                    pos+=4+this.texteditor.innerHTML.split("<br>")[i].length
-                }
-                /*if(line_number>0){
-                    pos-=4
-                }*/
-                let pos0=pos;
-                //console.log(pos0)
-                if(pos>4 && e.key != "Enter"){
-                    pos0=pos-5
-                }
-                //console.log(this.textarea.value)
-                //console.log(this.texteditor.innerHTML)
-                //console.log(pos0)
-                while(this.texteditor.innerHTML.substr(pos0,4)!="<br>" && pos0!=0){
-                    //console.log(this.texteditor.innerHTML.substr(pos0,pos0+4))
-                    pos0--;
-                }
-                pos0+=4
-                let fin=pos-4;
-                //console.log(pos0)
-                while(this.texteditor.innerHTML.substr(fin,4)!="<br>" && fin<this.texteditor.innerHTML.length){
-                    fin++;
-                }
-                //fin+=4
-                //console.log(fin)
-                let line = this.textarea.value.split("\n")[line_number-1]
-                let lexer = new Dromadaire.Lexer(new Dromadaire.File(line,"index.dmd")).build()[0]
-                let color={
-                    1:"#ff0000",
-                    2:"#00ff00",
-                    3:"#0000ff",
-                    4:"#ffff00"
-                }
-                let content=this.texteditor.innerHTML
-                this.texteditor.innerHTML=content.substring(0,pos0)
-                let j=0
-                let col=lexer[0].col
-                let max=col+lexer[0].size
-                for(let i=1;i<=line.length;i++){
-                    if(i>=max){
-                        j++
-                    }
-                    col=lexer[j].col
-                    max=col+lexer[j].size
-                    /*if(lexer[j].__type==17){
-                        this.texteditor.innerHTML+="<br>"
-                    }*/
-                    //else{
-                    if(col<=i<max){
-                        if(line[i-1]==" "){
-                        this.texteditor.innerHTML+="<span style='display:inline-block;line-height:20px;min-width:4.5px;color:"+color[lexer[j].__type]+"'>"+line[i-1]+"</span>"
-                        }
-                        else{
-                            this.texteditor.innerHTML+="<span style='display:inline-block;line-height:20px;color:"+color[lexer[j].__type]+"'>"+line[i-1]+"</span>"
-                        }
-                    }
-                    else{
-                        if(line[i-1]==" "){
-                            this.texteditor.innerHTML+="<span style='display:inline-block;min-width:4.5px;line-height:20px;color:#ffffff'>"+line[i-1]+"</span>"
-                            }
-                            else{
-                                this.texteditor.innerHTML+="<span style='display:inline-block;line-height:20px;color:#ffffff'>"+line[i-1]+"</span>"
-                            }
-                    }
-                //}
-                }
-                //console.log(this.texteditor.innerHTML)
-                if(this.texteditor.innerHTML.length!=0){
-                this.texteditor.innerHTML+="<br>"+content.substring(fin+4);
-                }
-                else{
-                    this.texteditor.innerHTML+=content.substring(fin+4);
-                }
-                //console.log(lexer)
-
-            },0)
-          })
-        
+        })
  
         let onglets= createElement("div", {}, "w-full h-full relative", [
             this.tabs,
@@ -372,7 +391,7 @@ class TextEditor extends ProjectPage{
             onglets_view
         ])
         //file_tree
-    }
+        }
     reload(){
         this.textarea.style.height = "5px";
         this.textarea.style.height = (this.textarea.scrollHeight + 30) + "px";
@@ -391,6 +410,8 @@ class TextEditor extends ProjectPage{
             let j=0
             let col=lexer[0].col
             let max=col+lexer[0].size
+            let contenu=""
+            let b=false
             for(let i=1;i<=ligne.length;i++){
                 if(i>=max){
                     j++
@@ -401,30 +422,36 @@ class TextEditor extends ProjectPage{
                     this.texteditor.innerHTML+="<br>"
                 }*/
                 //else{
-                if(col<=i<max){
-                    if(ligne[i-1]==" "){
-                    this.texteditor.innerHTML+="<span style='display:inline-block;line-height:20px;min-width:4.5px;color:"+color[lexer[j].__type]+"'>"+ligne[i-1]+"</span>"
-                    }
-                    else{
-                        this.texteditor.innerHTML+="<span style='display:inline-block;line-height:20px;color:"+color[lexer[j].__type]+"'>"+ligne[i-1]+"</span>"
-                    }
+                if(i==col){
+                    //console.log("deb")
+                    b=true
+                    contenu+="<span style='display:inline-block;line-height:20px;color:"+color[lexer[j].__type]+"'>"
+                }
+                if(b){
+                    //console.log("add")
+                    contenu+=ligne[i-1]
                 }
                 else{
                     if(ligne[i-1]==" "){
-                        this.texteditor.innerHTML+="<span style='display:inline-block;min-width:4.5px;line-height:20px;color:#ffffff'>"+ligne[i-1]+"</span>"
+                        contenu+="<span style='display:inline-block;min-width:4.5px;line-height:20px;color:#ffffff'>"+ligne[i-1]+"</span>"
                         }
                         else{
-                            this.texteditor.innerHTML+="<span style='display:inline-block;line-height:20px;color:#ffffff'>"+ligne[i-1]+"</span>"
+                            contenu+="<span style='display:inline-block;line-height:20px;color:#ffffff'>"+ligne[i-1]+"</span>"
                         }
+                }
+                if(i==max-1){
+                    b=false
+                    contenu+="</span>"       
                 }
             //}
             }
-            this.texteditor.innerHTML+="<br>"
+            this.texteditor.innerHTML+=contenu+"<br>"
         }
         //this.texteditor.innerHTML+="<br>"
         if(this.texteditor.innerHTML=="<br>"){
             this.texteditor.innerHTML=""
         }
+        this.line= this.textarea.value.split("\n").length
 
     }
     _render () {
