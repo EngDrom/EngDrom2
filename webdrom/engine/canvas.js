@@ -16,6 +16,9 @@ class WebGLCanvas extends Component {
 
     _first_render () {
         this.canvas = createElement("canvas", { onclick: (ev) => this.onClick(ev) }, "w-full h-full", []);
+        this.canvas.addEventListener("contextmenu", (event) => {
+            this.mode.oncontextmenu(event);
+        })
         this.keys   = {}
 
         document.addEventListener("WebDrom.MeshInstance.Clicked", (ev) => {

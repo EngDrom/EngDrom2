@@ -1,11 +1,13 @@
 
 
 class WebEngine {
-    constructor (parent) {
+    constructor (parent, project) {
         this.canvas = new WebGLCanvas(parent, this);
         this.canvas._first_render();
         this.interval = setInterval( () => this.drawCallback(), 1000 / 60 );
         this.start_interval = (+ new Date());
+
+        this.project = project;
     }
     drawCallback () {
         let end_interval = (+ new Date());

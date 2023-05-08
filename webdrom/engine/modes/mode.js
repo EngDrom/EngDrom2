@@ -4,6 +4,13 @@ class EngineMode {
         this.engine = engine;
     }
 
+    width () {
+        return this.engine.canvas.canvas.getAttribute("width")
+    }
+    height () {
+        return this.engine.canvas.canvas.getAttribute("height")
+    }
+
     get_context () {
         return this.engine.canvas.web_gl;
     }
@@ -35,6 +42,8 @@ class EngineMode {
     }
     onclick (event) {
         return true; // allow renderRTS
+    }
+    oncontextmenu (event) {
     }
     onlevelend () { // quit level
     }

@@ -97,7 +97,7 @@ class HomeProjectPage extends ProjectPage {
 class ProjectComponent extends Component {
     constructor (parent, project_page, engine) {
         super(parent);
-        this.engine = new WebEngine(this.component);
+        this.engine = engine;
 
         this.project_pages = {  }
     
@@ -152,7 +152,7 @@ class Project {
         this.body = body;
 
         this.page = page;
-        this.component = new ProjectComponent(undefined, page);
+        this.component = new ProjectComponent(undefined, page, new WebEngine(this.component, this));
         this.component.is_dom_root = true;
         this.component.dom_body = this.body;
         this.contextmenu = new ContextMenu(this);
