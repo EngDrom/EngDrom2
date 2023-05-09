@@ -6,7 +6,8 @@ class Animation {
         if (ANIMATIONS_ARRAY[file] === undefined)
             ANIMATIONS_ARRAY[file] = []
         ANIMATIONS_ARRAY[file].push(this);
-        
+        console.log(ANIMATIONS_ARRAY)
+
         this.file   = file;
         this.target = target;
 
@@ -37,6 +38,7 @@ class Animation {
         this.advance();
     }
     update (nodes) {
+        console.log(nodes)
         this.node = undefined;
         for (let node of nodes) {
             if (node.library_function !== ANIMATION_CATEGORY.functions.begin_animation)

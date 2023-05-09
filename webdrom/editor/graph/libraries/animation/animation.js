@@ -75,7 +75,7 @@ const ANIMATION_CATEGORY = (function () {
             multiplexer
         },
         library: new MGraph_Library(root_category, (mgraph) => {
-            let animations = ANIMATIONS_ARRAY[mgraph.file]
+            let animations = ANIMATIONS_ARRAY[mgraph.file_path]
             if (animations === undefined) return ;
 
             for (let animation of animations)
