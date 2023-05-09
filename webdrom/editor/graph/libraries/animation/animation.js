@@ -74,7 +74,13 @@ const ANIMATION_CATEGORY = (function () {
             wait_animation,
             multiplexer
         },
-        library: new MGraph_Library(root_category, (mgraph) => {})
+        library: new MGraph_Library(root_category, (mgraph) => {
+            let animations = ANIMATIONS_ARRAY[mgraph.file]
+            if (animations === undefined) return ;
+
+            for (let animation of animations)
+                animation.update(mgraph.nodes)
+        })
     }
 })();
 

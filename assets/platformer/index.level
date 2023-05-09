@@ -86,6 +86,7 @@
       "animation": "characters.anim",
       "atlas": "characters.atl",
       "coordinates": 1,
+      "use_revert": true,
       "texture_mask": [
         0.25,
         0.5,

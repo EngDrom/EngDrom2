@@ -27,10 +27,17 @@ class TextureAtlasMeshInstance extends MeshInstance {
     constructor (context, mesh, transform, atlas) {
         super(context, mesh, transform);
         this.atlas = atlas;
+
+        this.current_revert = false;
     }
 
     setCoordinates (coordinates) {
-        let [mu00, mu01, mu10, mu11] = this.atlas.coordinates(coordinates, this.texture_mask);
+        let speed_x = this.sri.position.spe.x + this.sri.position.ssp.x;
+        let revert = this.use_revert
+                 && (speed_x < 0 || (this.current_revert && speed_x === 0));
+        this.current_revert = revert;
+
+        let [mu00, mu01, mu10, mu11] = this.atlas.coordinates(coordinates, this.texture_mask, revert);
             
         let vbos = [ 
             [ [1, 1, 0], [-1, 1, 0], [1, -1, 0], [-1, -1, 0] ],

@@ -106,6 +106,8 @@ class Level {
                 instance_json.attach = options.attach
             if (options.animation)
                 instance_json.animation = options.animation
+            if (options.use_revert)
+                instance_json.use_revert = true;
             
             if (type === "atlas.mesh") {
                 instance_json.atlas = options.atlas
@@ -199,6 +201,9 @@ class Level {
         let atlas     = new AtlasTexture(this.context, json.atlas);
         let instance  = new TextureAtlasMeshInstance(this.context, undefined, transform, atlas);
         let options   = { atlas: json.atlas }
+
+        if (json.use_revert)
+            instance.use_revert = true;
 
         atlas.wait().then(() => {
             if (json.texture_mask)

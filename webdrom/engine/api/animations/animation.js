@@ -1,6 +1,12 @@
 
+const ANIMATIONS_ARRAY = {  };
+
 class Animation {
     constructor (file, target) {
+        if (ANIMATIONS_ARRAY[file] === undefined)
+            ANIMATIONS_ARRAY[file] = []
+        ANIMATIONS_ARRAY[file].push(this);
+        
         this.file   = file;
         this.target = target;
 

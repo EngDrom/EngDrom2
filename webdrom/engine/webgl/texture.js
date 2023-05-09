@@ -106,7 +106,7 @@ class AtlasTexture extends Texture {
     rcoord (index) {
         return this.atlas[index];
     }
-    coordinates (index, mask = undefined) {
+    coordinates (index, mask = undefined, reverse = false) {
         let [x, y, w, h] = this.atlas[index];
 
         x += 0.1
@@ -127,6 +127,8 @@ class AtlasTexture extends Texture {
             x1  = x0 + sx * w;
             y1  = y0 + sy * h;
         }
+
+        if (reverse) [x0, x1] = [x1, x0];
 
         return [
             [ x0 / this.image.width, y1 / this.image.height ],
