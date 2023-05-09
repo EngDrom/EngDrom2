@@ -333,10 +333,10 @@ class TextEditor extends ProjectPage {
             let line = area.value.split("\n")[line_number - 1]
             let lexer = new Dromadaire.Lexer(new Dromadaire.File(line, "index.dmd")).build()[0]
             let color = {
-                1: "#ff0000",
-                2: "#00ff00",
-                3: "#0000ff",
-                4: "#ffff00"
+                1: "#FF934F",
+                2: "#88AB75",
+                3: "#1C448E",
+                4: "#88AB75"
             }
             let content = editor.innerHTML
             editor.innerHTML = content.substring(0, pos0)
@@ -429,10 +429,10 @@ class TextEditor extends ProjectPage {
         let line = area.value.split("\n")
 
         let color = {
-            1: "#ff0000",
-            2: "#00ff00",
-            3: "#0000ff",
-            4: "#ffff00"
+            1: "#FF934F",
+            2: "#88AB75",
+            3: "#1C448E",
+            4: "#88AB75"
         }
         for (let k = 0; k < line.length; k++) {
             let ligne = line[k]
